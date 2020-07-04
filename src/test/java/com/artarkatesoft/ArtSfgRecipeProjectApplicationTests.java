@@ -1,4 +1,4 @@
-package com.artarkatesoft.artsfgrecipeproject;
+package com.artarkatesoft;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
