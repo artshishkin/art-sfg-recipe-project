@@ -4,22 +4,15 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
 
 @Entity
 @Getter
 @Setter
-public class Ingredient {
+public class UnitOfMeasure {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String description;
-    private BigDecimal amount;
-
-    @ManyToOne
-    private Recipe recipe;
-
     @OneToOne
-    private UnitOfMeasure uom;
+    private Ingredient ingredient;
 }
