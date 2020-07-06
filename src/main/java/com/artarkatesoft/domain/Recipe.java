@@ -21,7 +21,10 @@ public class Recipe {
     private String source;
     private String url;
     private String directions;
-    //    private Difficulty difficulty;
+
+    @Enumerated(EnumType.STRING)
+    private Difficulty difficulty;
+
     @Lob
     private byte[] image;
 
