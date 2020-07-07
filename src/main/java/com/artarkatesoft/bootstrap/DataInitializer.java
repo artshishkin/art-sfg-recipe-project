@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static java.math.BigDecimal.valueOf;
 
@@ -21,6 +22,9 @@ public class DataInitializer implements CommandLineRunner {
     private final RecipeRepository recipeRepository;
     private final UnitOfMeasureRepository unitOfMeasureRepository;
     private final CategoryRepository categoryRepository;
+
+    private final Supplier<RuntimeException> expectedCategoryNotFound = () -> new RuntimeException("Expected Category not found");
+    private final Supplier<RuntimeException> expectedUomNotFound = () -> new RuntimeException("Expected UOM not found");
 
     @Override
     public void run(String... args) throws Exception {
@@ -50,12 +54,17 @@ public class DataInitializer implements CommandLineRunner {
         Set<Ingredient> ingredients = new HashSet<>();
         recipe.setIngredients(ingredients);
 
-        ingredients.add(new Ingredient(recipe,"2 ripe avocados", valueOf(2),unitOfMeasureRepository.findByDescription("Unit").get()));
-        ingredients.add(new Ingredient(recipe,"1/4 teaspoon of salt, more to taste", valueOf(0.25),unitOfMeasureRepository.findByDescription("Teaspoon").get()));
-        ingredients.add(new Ingredient(recipe,"1 tablespoon fresh lime juice or lemon juice", valueOf(1),unitOfMeasureRepository.findByDescription("Tablespoon").get()));
-        ingredients.add(new Ingredient(recipe,"2 tablespoons to 1/4 cup of minced red onion or thinly sliced green onion", valueOf(0.25),unitOfMeasureRepository.findByDescription("Cup").get()));
-        Category mexican = categoryRepository.findByDescription("Mexican").get();
-//        mexican.getRecipes().add(recipe);
+        UnitOfMeasure unit = unitOfMeasureRepository.findByDescription("Unit").orElseThrow(expectedUomNotFound);
+        UnitOfMeasure teaspoon = unitOfMeasureRepository.findByDescription("Teaspoon").orElseThrow(expectedUomNotFound);
+        UnitOfMeasure tablespoon = unitOfMeasureRepository.findByDescription("Tablespoon").orElseThrow(expectedUomNotFound);
+        UnitOfMeasure cup = unitOfMeasureRepository.findByDescription("Cup").orElseThrow(expectedUomNotFound);
+
+        ingredients.add(new Ingredient(recipe, "2 ripe avocados", valueOf(2), unit));
+        ingredients.add(new Ingredient(recipe, "1/4 teaspoon of salt, more to taste", valueOf(0.25), teaspoon));
+        ingredients.add(new Ingredient(recipe, "1 tablespoon fresh lime juice or lemon juice", valueOf(1), tablespoon));
+        ingredients.add(new Ingredient(recipe, "2 tablespoons to 1/4 cup of minced red onion or thinly sliced green onion", valueOf(0.25), cup));
+
+        Category mexican = categoryRepository.findByDescription("Mexican").orElseThrow(expectedCategoryNotFound);
         recipe.setCategories(Collections.singleton(mexican));
         return recipe;
     }
@@ -82,17 +91,21 @@ public class DataInitializer implements CommandLineRunner {
         Set<Ingredient> ingredients = new HashSet<>();
         recipe.setIngredients(ingredients);
 
-        ingredients.add(new Ingredient(recipe, "2 tablespoons ancho chili powder", valueOf(2),unitOfMeasureRepository.findByDescription("Tablespoon").get()));
-        ingredients.add(new Ingredient(recipe, "1 teaspoon dried oregano", valueOf(1),unitOfMeasureRepository.findByDescription("Teaspoon").get()));
-        ingredients.add(new Ingredient(recipe, "1 teaspoon dried cumin", valueOf(1),unitOfMeasureRepository.findByDescription("Teaspoon").get()));
-        ingredients.add(new Ingredient(recipe, "1 teaspoon sugar", valueOf(1),unitOfMeasureRepository.findByDescription("Teaspoon").get()));
+        UnitOfMeasure unit = unitOfMeasureRepository.findByDescription("Unit").orElseThrow(expectedUomNotFound);
+        UnitOfMeasure teaspoon = unitOfMeasureRepository.findByDescription("Teaspoon").orElseThrow(expectedUomNotFound);
+        UnitOfMeasure tablespoon = unitOfMeasureRepository.findByDescription("Tablespoon").orElseThrow(expectedUomNotFound);
+        UnitOfMeasure cup = unitOfMeasureRepository.findByDescription("Cup").orElseThrow(expectedUomNotFound);
 
-//        mexican.getRecipes().add(recipe);
+        ingredients.add(new Ingredient(recipe, "2 tablespoons ancho chili powder", valueOf(2), tablespoon));
+        ingredients.add(new Ingredient(recipe, "1 teaspoon dried oregano", valueOf(1), teaspoon));
+        ingredients.add(new Ingredient(recipe, "1 teaspoon dried cumin", valueOf(1), teaspoon));
+        ingredients.add(new Ingredient(recipe, "1 teaspoon sugar", valueOf(1), teaspoon));
 
         recipe.setCategories(new HashSet<>());
-        Category mexican = categoryRepository.findByDescription("Mexican").get();
+        Category mexican = categoryRepository.findByDescription("Mexican").orElseThrow(expectedCategoryNotFound);
         recipe.getCategories().add(mexican);
-        Category fastFood = categoryRepository.findByDescription("Fast Food").get();
+
+        Category fastFood = categoryRepository.findByDescription("Fast Food").orElseThrow(expectedCategoryNotFound);
         recipe.getCategories().add(fastFood);
 
         return recipe;
