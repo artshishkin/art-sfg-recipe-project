@@ -1,10 +1,12 @@
 package com.artarkatesoft.domain;
 
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,6 +36,7 @@ public class Recipe {
     private Notes notes;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    @Setter(AccessLevel.NONE)
     private Set<Ingredient> ingredients = new HashSet<>();
 
     @ManyToMany
@@ -45,5 +48,15 @@ public class Recipe {
 
         if (notes != null)
             notes.setRecipe(this);
+    }
+
+    public void addIngredient(Ingredient ingredient) {
+        if (ingredient == null) return;
+        ingredients.add(ingredient);
+        ingredient.setRecipe(this);
+    }
+
+    public Set<Ingredient> getIngredients() {
+        return Collections.unmodifiableSet(ingredients);
     }
 }

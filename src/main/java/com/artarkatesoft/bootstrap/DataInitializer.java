@@ -9,8 +9,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import static java.math.BigDecimal.valueOf;
@@ -26,6 +24,11 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
     private final Supplier<RuntimeException> expectedCategoryNotFound = () -> new RuntimeException("Expected Category not found");
     private final Supplier<RuntimeException> expectedUomNotFound = () -> new RuntimeException("Expected UOM not found");
 
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        recipeRepository.save(createGuacamoleRecipe());
+        recipeRepository.save(createChickenTacosRecipe());
+    }
 
     private Recipe createGuacamoleRecipe() {
         Recipe recipe = new Recipe();
@@ -48,18 +51,15 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
         recipe.setNotes(notes);
 
-        Set<Ingredient> ingredients = new HashSet<>();
-        recipe.setIngredients(ingredients);
-
         UnitOfMeasure unitUom = unitOfMeasureRepository.findByDescription("Unit").orElseThrow(expectedUomNotFound);
         UnitOfMeasure teaspoonUom = unitOfMeasureRepository.findByDescription("Teaspoon").orElseThrow(expectedUomNotFound);
         UnitOfMeasure tablespoonUom = unitOfMeasureRepository.findByDescription("Tablespoon").orElseThrow(expectedUomNotFound);
         UnitOfMeasure cupUom = unitOfMeasureRepository.findByDescription("Cup").orElseThrow(expectedUomNotFound);
 
-        ingredients.add(new Ingredient(recipe, "2 ripe avocados", valueOf(2), unitUom));
-        ingredients.add(new Ingredient(recipe, "1/4 teaspoon of salt, more to taste", valueOf(0.25), teaspoonUom));
-        ingredients.add(new Ingredient(recipe, "1 tablespoon fresh lime juice or lemon juice", valueOf(1), tablespoonUom));
-        ingredients.add(new Ingredient(recipe, "2 tablespoons to 1/4 cup of minced red onion or thinly sliced green onion", valueOf(0.25), cupUom));
+        recipe.addIngredient(new Ingredient("2 ripe avocados", valueOf(2), unitUom));
+        recipe.addIngredient(new Ingredient("1/4 teaspoon of salt, more to taste", valueOf(0.25), teaspoonUom));
+        recipe.addIngredient(new Ingredient("1 tablespoon fresh lime juice or lemon juice", valueOf(1), tablespoonUom));
+        recipe.addIngredient(new Ingredient("2 tablespoons to 1/4 cup of minced red onion or thinly sliced green onion", valueOf(0.25), cupUom));
 
         Category mexican = categoryRepository.findByDescription("Mexican").orElseThrow(expectedCategoryNotFound);
         Category american = categoryRepository.findByDescription("American").orElseThrow(expectedCategoryNotFound);
@@ -89,17 +89,13 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
         recipe.setNotes(notes);
 
-        Set<Ingredient> ingredients = new HashSet<>();
-        recipe.setIngredients(ingredients);
-
         UnitOfMeasure teaspoonUom = unitOfMeasureRepository.findByDescription("Teaspoon").orElseThrow(expectedUomNotFound);
         UnitOfMeasure tablespoonUom = unitOfMeasureRepository.findByDescription("Tablespoon").orElseThrow(expectedUomNotFound);
 
-        ingredients.add(new Ingredient(recipe, "2 tablespoons ancho chili powder", valueOf(2), tablespoonUom));
-        ingredients.add(new Ingredient(recipe, "1 teaspoon dried oregano", valueOf(1), teaspoonUom));
-        ingredients.add(new Ingredient(recipe, "1 teaspoon dried cumin", valueOf(1), teaspoonUom));
-        ingredients.add(new Ingredient(recipe, "1 teaspoon sugar", valueOf(1), teaspoonUom));
-
+        recipe.addIngredient(new Ingredient("2 tablespoons ancho chili powder", valueOf(2), tablespoonUom));
+        recipe.addIngredient(new Ingredient("1 teaspoon dried oregano", valueOf(1), teaspoonUom));
+        recipe.addIngredient(new Ingredient("1 teaspoon dried cumin", valueOf(1), teaspoonUom));
+        recipe.addIngredient(new Ingredient("1 teaspoon sugar", valueOf(1), teaspoonUom));
 
         Category mexican = categoryRepository.findByDescription("Mexican").orElseThrow(expectedCategoryNotFound);
         Category fastFood = categoryRepository.findByDescription("Fast Food").orElseThrow(expectedCategoryNotFound);
@@ -109,9 +105,5 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
         return recipe;
     }
 
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        recipeRepository.save(createGuacamoleRecipe());
-        recipeRepository.save(createChickenTacosRecipe());
-    }
+
 }
