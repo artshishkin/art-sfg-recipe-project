@@ -3,6 +3,7 @@ package com.artarkatesoft.domain;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @NoArgsConstructor
+@ToString
 public class Ingredient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +22,7 @@ public class Ingredient {
     private BigDecimal amount;
 
     @ManyToOne
+    @ToString.Exclude
     private Recipe recipe;
 
     @OneToOne
