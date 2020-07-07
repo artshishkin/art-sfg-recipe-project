@@ -5,7 +5,8 @@ import com.artarkatesoft.repositories.CategoryRepository;
 import com.artarkatesoft.repositories.RecipeRepository;
 import com.artarkatesoft.repositories.UnitOfMeasureRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -16,7 +17,7 @@ import static java.math.BigDecimal.valueOf;
 
 @Component
 @RequiredArgsConstructor
-public class DataInitializer implements CommandLineRunner {
+public class DataInitializer implements ApplicationListener<ContextRefreshedEvent> {
 
     private final RecipeRepository recipeRepository;
     private final UnitOfMeasureRepository unitOfMeasureRepository;
@@ -25,13 +26,6 @@ public class DataInitializer implements CommandLineRunner {
     private final Supplier<RuntimeException> expectedCategoryNotFound = () -> new RuntimeException("Expected Category not found");
     private final Supplier<RuntimeException> expectedUomNotFound = () -> new RuntimeException("Expected UOM not found");
 
-    @Override
-    public void run(String... args) throws Exception {
-
-        recipeRepository.save(createGuacamoleRecipe());
-        recipeRepository.save(createChickenTacosRecipe());
-
-    }
 
     private Recipe createGuacamoleRecipe() {
         Recipe recipe = new Recipe();
@@ -83,7 +77,7 @@ public class DataInitializer implements CommandLineRunner {
         recipe.setServings(6);
         recipe.setDifficulty(Difficulty.HARD);
         recipe.setUrl("https://www.simplyrecipes.com/recipes/spicy_grilled_chicken_tacos/");
-        recipe.setDirections("1 Prepare a gas or charcoal grill for medium-high, direct heat.\n"+
+        recipe.setDirections("1 Prepare a gas or charcoal grill for medium-high, direct heat.\n" +
                 "2 Make the marinade and coat the chicken: In a large bowl, stir together\n" +
                 "3 Grill the chicken: Grill the chicken for 3 to 4 minutes per side, \n" +
                 "4 Warm the tortillas: Place each tortilla on the grill or on a \n" +
@@ -115,5 +109,11 @@ public class DataInitializer implements CommandLineRunner {
         recipe.getCategories().add(fastFood);
 
         return recipe;
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        recipeRepository.save(createGuacamoleRecipe());
+        recipeRepository.save(createChickenTacosRecipe());
     }
 }
