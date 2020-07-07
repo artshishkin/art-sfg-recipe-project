@@ -63,8 +63,8 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
         Category mexican = categoryRepository.findByDescription("Mexican").orElseThrow(expectedCategoryNotFound);
         Category american = categoryRepository.findByDescription("American").orElseThrow(expectedCategoryNotFound);
-        recipe.getCategories().add(mexican);
-        recipe.getCategories().add(american);
+        recipe.addCategory(mexican);
+        recipe.addCategory(american);
         return recipe;
     }
 
@@ -99,8 +99,8 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
         Category mexican = categoryRepository.findByDescription("Mexican").orElseThrow(expectedCategoryNotFound);
         Category fastFood = categoryRepository.findByDescription("Fast Food").orElseThrow(expectedCategoryNotFound);
-        recipe.getCategories().add(mexican);
-        recipe.getCategories().add(fastFood);
+        recipe.addCategory(mexican);
+        recipe.addCategory(fastFood);
 
         return recipe;
     }

@@ -40,6 +40,7 @@ public class Recipe {
     private Set<Ingredient> ingredients = new HashSet<>();
 
     @ManyToMany
+    @Setter(AccessLevel.NONE)
     private Set<Category> categories = new HashSet<>();
 
     public void setNotes(Notes notes) {
@@ -58,5 +59,14 @@ public class Recipe {
 
     public Set<Ingredient> getIngredients() {
         return Collections.unmodifiableSet(ingredients);
+    }
+
+    public void addCategory(Category category){
+        if (category==null) return;
+        categories.add(category);
+    }
+
+    public Set<Category> getCategories() {
+        return Collections.unmodifiableSet(categories);
     }
 }
