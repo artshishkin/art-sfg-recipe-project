@@ -4,8 +4,11 @@ package com.artarkatesoft.domain;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,6 +45,12 @@ public class Recipe {
     @ManyToMany
     @Setter(AccessLevel.NONE)
     private Set<Category> categories = new HashSet<>();
+
+    @CreationTimestamp
+    private LocalDateTime created;
+
+    @UpdateTimestamp
+    private LocalDateTime modified;
 
     public void setNotes(Notes notes) {
         if (this.notes == notes) return;
