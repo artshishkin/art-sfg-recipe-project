@@ -18,4 +18,12 @@ public class Notes {
 
     @OneToOne
     private Recipe recipe;
+
+    public void setRecipe(Recipe recipe) {
+        if (this.recipe == recipe) return;
+        this.recipe = recipe;
+
+        if (recipe != null)
+            recipe.setNotes(this);
+    }
 }

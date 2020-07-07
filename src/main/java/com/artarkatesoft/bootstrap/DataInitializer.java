@@ -47,7 +47,6 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
                 "or spoon it on top of tacos for an easy dinner upgrade.");
 
         recipe.setNotes(notes);
-        notes.setRecipe(recipe);
 
         Set<Ingredient> ingredients = new HashSet<>();
         recipe.setIngredients(ingredients);
@@ -89,7 +88,6 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
                 "backyard cookouts, and tailgate parties");
 
         recipe.setNotes(notes);
-        notes.setRecipe(recipe);
 
         Set<Ingredient> ingredients = new HashSet<>();
         recipe.setIngredients(ingredients);

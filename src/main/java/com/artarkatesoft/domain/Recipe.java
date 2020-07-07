@@ -39,4 +39,11 @@ public class Recipe {
     @ManyToMany
     private Set<Category> categories = new HashSet<>();
 
+    public void setNotes(Notes notes) {
+        if (this.notes == notes) return;
+        this.notes = notes;
+
+        if (notes != null)
+            notes.setRecipe(this);
+    }
 }
