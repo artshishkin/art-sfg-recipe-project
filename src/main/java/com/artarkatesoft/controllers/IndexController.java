@@ -1,6 +1,5 @@
 package com.artarkatesoft.controllers;
 
-import com.artarkatesoft.domain.Recipe;
 import com.artarkatesoft.services.RecipeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -15,8 +14,7 @@ public class IndexController {
 
     @RequestMapping({"/", "index"})
     public String index(Model model) {
-        Iterable<Recipe> allRecipes = recipeService.getAllRecipes();
-        model.addAttribute("recipes", allRecipes);
+        model.addAttribute("recipes", recipeService.getAllRecipes());
         return "index";
     }
 }
