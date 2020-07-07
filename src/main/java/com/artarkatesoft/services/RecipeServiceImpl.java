@@ -15,10 +15,6 @@ public class RecipeServiceImpl implements RecipeService {
 
     private final RecipeRepository recipeRepository;
 
-    public Recipe getRecipe(Long id) {
-        return recipeRepository.findById(id).get();
-    }
-
     @Override
     public Set<Recipe> getAllRecipes() {
         Iterable<Recipe> iterable = recipeRepository.findAll();
