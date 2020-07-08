@@ -1,13 +1,12 @@
 package com.artarkatesoft.domain;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 
 @Entity
-@Setter
-@Getter
+@Data
 public class Notes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,6 +16,7 @@ public class Notes {
     private String notes;
 
     @OneToOne
+    @EqualsAndHashCode.Exclude
     private Recipe recipe;
 
     public void setRecipe(Recipe recipe) {

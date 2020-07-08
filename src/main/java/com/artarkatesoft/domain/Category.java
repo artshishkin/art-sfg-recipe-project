@@ -1,7 +1,7 @@
 package com.artarkatesoft.domain;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.persistence.*;
@@ -9,9 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Setter
-@Getter
-@ToString
+@Data
 public class Category {
 
     @Id
@@ -22,5 +20,6 @@ public class Category {
 
     @ManyToMany(mappedBy = "categories")
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<Recipe> recipes = new HashSet<>();
 }

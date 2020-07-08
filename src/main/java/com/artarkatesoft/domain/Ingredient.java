@@ -1,18 +1,16 @@
 package com.artarkatesoft.domain;
 
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
-@ToString
 public class Ingredient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +21,7 @@ public class Ingredient {
 
     @ManyToOne
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Recipe recipe;
 
     @OneToOne

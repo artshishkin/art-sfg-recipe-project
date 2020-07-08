@@ -5,6 +5,7 @@ import com.artarkatesoft.repositories.CategoryRepository;
 import com.artarkatesoft.repositories.RecipeRepository;
 import com.artarkatesoft.repositories.UnitOfMeasureRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import java.util.function.Supplier;
 
 import static java.math.BigDecimal.valueOf;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements ApplicationListener<ContextRefreshedEvent> {
@@ -26,11 +28,14 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
+        log.debug("Starting bootstrap data...");
         recipeRepository.save(createGuacamoleRecipe());
         recipeRepository.save(createChickenTacosRecipe());
+        log.debug("Bootstrap data loaded");
     }
 
     private Recipe createGuacamoleRecipe() {
+        log.debug("Starting createGuacamoleRecipe()");
         Recipe recipe = new Recipe();
         recipe.setPrepTime(10);
         recipe.setCookTime(0);
@@ -69,6 +74,7 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
     }
 
     private Recipe createChickenTacosRecipe() {
+        log.debug("Starting createChickenTacosRecipe()");
         Recipe recipe = new Recipe();
         recipe.setPrepTime(20);
         recipe.setCookTime(15);

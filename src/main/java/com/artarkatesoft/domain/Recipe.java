@@ -2,7 +2,8 @@ package com.artarkatesoft.domain;
 
 
 import lombok.AccessLevel;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -14,8 +15,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(exclude = {"notes", "ingredients", "categories"})
 public class Recipe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,8 +71,8 @@ public class Recipe {
         return Collections.unmodifiableSet(ingredients);
     }
 
-    public void addCategory(Category category){
-        if (category==null) return;
+    public void addCategory(Category category) {
+        if (category == null) return;
         categories.add(category);
     }
 
