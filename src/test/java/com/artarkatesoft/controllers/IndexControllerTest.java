@@ -16,8 +16,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
@@ -40,6 +40,9 @@ class IndexControllerTest {
     ArgumentCaptor<String> stringCaptor;
     @Captor
     ArgumentCaptor<Object> objectCaptor;
+    @Captor
+    ArgumentCaptor<Set<Recipe>> recipeSetCaptor;
+
 
     @BeforeEach
     void setUp() {
@@ -73,14 +76,30 @@ class IndexControllerTest {
     }
 
     @Test
+    void indexCaptor() {
+        //given
+        given(recipeService.getAllRecipes()).willReturn(recipes);
+        //when
+        String index = indexController.index(model);
+        //then
+        then(model).should().addAttribute(stringCaptor.capture(), recipeSetCaptor.capture());
+        then(recipeService).should().getAllRecipes();
+        assertThat(index).isEqualTo("index");
+        assertThat(stringCaptor.getValue()).isEqualTo("recipes");
+        assertThat(recipeSetCaptor.getValue()).hasSize(2);
+
+    }
+
+    @Test
     void indexJohn() {
         //when
         String viewName = indexController.index(model);
         //then
         verify(model).addAttribute(eq("recipes"), anySet());
-        verify(recipeService,times(1)).getAllRecipes();
+        verify(recipeService, times(1)).getAllRecipes();
         assertThat(viewName).isEqualTo("index");
     }
+
     @Test
     void indexJohnBDD() {
         //when
