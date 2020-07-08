@@ -2,6 +2,7 @@ package com.artarkatesoft.controllers;
 
 import com.artarkatesoft.domain.Recipe;
 import com.artarkatesoft.services.RecipeService;
+import org.hamcrest.core.Is;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +11,10 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.ui.Model;
 
 import java.util.HashSet;
@@ -108,5 +113,15 @@ class IndexControllerTest {
         then(model).should().addAttribute(eq("recipes"), anySet());
         then(recipeService).should().getAllRecipes();
         assertThat(viewName).isEqualTo("index");
+    }
+
+    @Test
+    void testMockMVC() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(indexController).build();
+        mockMvc.perform(MockMvcRequestBuilders.get("/"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.view().name("index"))
+                .andExpect(MockMvcResultMatchers.model().attributeExists("recipes"))
+                .andExpect(MockMvcResultMatchers.model().attribute("recipes", Is.isA(Set.class)));
     }
 }
