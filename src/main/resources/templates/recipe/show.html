@@ -28,7 +28,8 @@
                             <ul>
                                 <li th:remove="all">cat one</li>
                                 <li th:remove="all">cat two</li>
-                                <li th:each="category : ${recipe.categories}" th:text="${category.description}">cat three</li>
+                                <li th:each="category : ${recipe.categories}"
+                                    th:text="${category.description}">cat three</li>
                             </ul>
                         </div>
                     </div>
@@ -37,13 +38,13 @@
                             <h5>Prep time</h5>
                         </div>
                         <div class="col-md-3">
-                            <p>10 min</p>
+                            <p th:text="|${recipe.prepTime} min|">10 min</p>
                         </div>
                         <div class="col-md-3">
                             <h5>Difficulty</h5>
                         </div>
                         <div class="col-md-3">
-                            <p>Easy</p>
+                            <p th:text="${recipe.difficulty}">Easy</p>
                         </div>
                     </div>
                     <div class="row">
@@ -51,13 +52,13 @@
                             <h5>Cook time</h5>
                         </div>
                         <div class="col-md-3">
-                            <p>10 min</p>
+                            <p th:text="|${recipe.cookTime} min|">10 min</p>
                         </div>
                         <div class="col-md-3">
                             <h5>Servings</h5>
                         </div>
                         <div class="col-md-3">
-                            <p>4</p>
+                            <p th:text="${recipe.servings}">4</p>
                         </div>
                     </div>
                     <div class="row">
@@ -65,13 +66,17 @@
                             <h5>Source</h5>
                         </div>
                         <div class="col-md-3">
-                            <p>10 min</p>
+                            <p th:text="${recipe.source}">10 min</p>
                         </div>
                         <div class="col-md-3">
                             <h5>URL</h5>
                         </div>
                         <div class="col-md-3">
-                            <p>http://www.example.com</p>
+                            <p>
+                                <a href="#"
+                                  th:href="${recipe.url}"
+                                  th:text="${recipe.description}">http://example.com</a>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -108,7 +113,7 @@
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-md-9">
-                            <p>blablabla</p>
+                            <p th:text="${recipe.directions}">blablabla</p>
                         </div>
                     </div>
                 </div>
@@ -124,7 +129,7 @@
                 <div class="panel-body">
                     <div class="row">
                         <div class="col-md-12">
-                            <p>blablabla</p>
+                            <p th:text="${recipe.notes.notes}">blablabla</p>
                         </div>
                     </div>
                 </div>
