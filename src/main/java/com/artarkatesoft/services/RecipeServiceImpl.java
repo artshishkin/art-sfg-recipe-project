@@ -26,4 +26,9 @@ public class RecipeServiceImpl implements RecipeService {
                 .collect(Collectors.toSet());
     }
 
+    @Override
+    public Recipe getById(Long id) {
+        return recipeRepository.findById(id).orElseThrow(() -> new RuntimeException("Recipe with id " + id + " Not found"));
+    }
+
 }
