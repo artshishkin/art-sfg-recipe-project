@@ -88,8 +88,10 @@
                     <div class="row">
                         <div class="col-md-12">
                             <ul>
-                                <li>1 Cup of tea</li>
-                                <li>1 Teaspoon of chocolate</li>
+                                <li th:remove="all">1 Cup of tea</li>
+                                <li th:remove="all">1 Teaspoon of chocolate</li>
+                                <li th:each="ingredient : ${recipe.ingredients}"
+                                th:text="|${ingredient.amount} ${ingredient.uom.description} of ${ingredient.description}|">1 Teaspoon of chocolate</li>
                             </ul>
                         </div>
                     </div>
