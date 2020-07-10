@@ -25,8 +25,8 @@ class CategoryToCategoryCommandConverterTest {
     }
 
     @Test
-    void testNotNullSource() {
-        assertNotNull(converter.convert(category));
+    void testEmptySource() {
+        assertNotNull(converter.convert(new Category()));
     }
 
     @Test

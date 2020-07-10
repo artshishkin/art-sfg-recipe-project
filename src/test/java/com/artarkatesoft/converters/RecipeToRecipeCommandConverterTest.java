@@ -1,10 +1,11 @@
 package com.artarkatesoft.converters;
 
 import com.artarkatesoft.commands.RecipeCommand;
-import com.artarkatesoft.domain.Difficulty;
-import com.artarkatesoft.domain.Recipe;
+import com.artarkatesoft.domain.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,6 +24,35 @@ class RecipeToRecipeCommandConverterTest {
         recipe.setDifficulty(Difficulty.EASY);
         recipe.setServings(4);
         recipe.setSource("source");
+
+        Category category;
+        category = new Category();
+        category.setId(3L);
+        category.setDescription("CatDesc3");
+        recipe.addCategory(category);
+        category = new Category();
+        category.setId(4L);
+        category.setDescription("CatDesc4");
+        recipe.addCategory(category);
+
+        Ingredient ingredient;
+        ingredient = new Ingredient();
+        ingredient.setId(8L);
+        ingredient.setDescription("ddd");
+        ingredient.setAmount(BigDecimal.valueOf(123));
+        UnitOfMeasure uom = new UnitOfMeasure();
+        uom.setId(1L);
+        uom.setDescription("qwert");
+        ingredient.setUom(uom);
+        recipe.addIngredient(ingredient);
+        ingredient.setId(7L);
+        ingredient.setDescription("asd");
+        ingredient.setAmount(BigDecimal.valueOf(124));
+        uom = new UnitOfMeasure();
+        uom.setId(4L);
+        uom.setDescription("erty");
+        ingredient.setUom(uom);
+        recipe.addIngredient(ingredient);
     }
 
     @Test
@@ -50,7 +80,6 @@ class RecipeToRecipeCommandConverterTest {
                 () -> assertEquals(recipe.getServings(), recipeCommand.getServings()),
                 () -> assertEquals(recipe.getUrl(), recipeCommand.getUrl()),
                 () -> assertEquals(recipe.getSource(), recipeCommand.getSource())
-
         );
 
     }

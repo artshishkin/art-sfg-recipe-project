@@ -25,8 +25,8 @@ class NotesCommandToNotesConverterTest {
     }
 
     @Test
-    void testNotNullSource() {
-        assertNotNull(converter.convert(notesCommand));
+    void testEmptySource() {
+        assertNotNull(converter.convert(new NotesCommand()));
     }
 
     @Test

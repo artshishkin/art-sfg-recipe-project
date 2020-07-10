@@ -26,8 +26,8 @@ class UnitOfMeasureCommandToUnitOfMeasureConverterTest {
     }
 
     @Test
-    void testNotNullSource() {
-        assertNotNull(converter.convert(uomCommand));
+    void testEmptySource() {
+        assertNotNull(converter.convert(new UnitOfMeasureCommand()));
     }
 
     @Test
