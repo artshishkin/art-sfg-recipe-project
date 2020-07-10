@@ -6,7 +6,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RecipeToRecipeCommandConverterTest {
@@ -15,7 +17,12 @@ class RecipeToRecipeCommandConverterTest {
 
     @BeforeAll
     static void setUp() {
-        converter = new RecipeToRecipeCommandConverter();
+        UnitOfMeasureToUnitOfMeasureCommandConverter uomConverter = new UnitOfMeasureToUnitOfMeasureCommandConverter();
+        IngredientToIngredientCommandConverter ingredientConverter = new IngredientToIngredientCommandConverter(uomConverter);
+        NotesToNotesCommandConverter notesConverter = new NotesToNotesCommandConverter();
+        CategoryToCategoryCommandConverter categoryConverter = new CategoryToCategoryCommandConverter();
+
+        converter = new RecipeToRecipeCommandConverter(ingredientConverter, notesConverter, categoryConverter);
         recipe = new Recipe();
         recipe.setId(100L);
         recipe.setDescription("Desc");
@@ -53,6 +60,11 @@ class RecipeToRecipeCommandConverterTest {
         uom.setDescription("erty");
         ingredient.setUom(uom);
         recipe.addIngredient(ingredient);
+
+        Notes notes = new Notes();
+        notes.setId(1L);
+        notes.setNotes("notesnotes");
+        recipe.setNotes(notes);
     }
 
     @Test
@@ -61,8 +73,8 @@ class RecipeToRecipeCommandConverterTest {
     }
 
     @Test
-    void testNotNullSource() {
-        assertNotNull(converter.convert(recipe));
+    void testEmptySource() {
+        assertNotNull(converter.convert(new Recipe()));
     }
 
     @Test
@@ -79,10 +91,30 @@ class RecipeToRecipeCommandConverterTest {
                 () -> assertEquals(recipe.getPrepTime(), recipeCommand.getPrepTime()),
                 () -> assertEquals(recipe.getServings(), recipeCommand.getServings()),
                 () -> assertEquals(recipe.getUrl(), recipeCommand.getUrl()),
-                () -> assertEquals(recipe.getSource(), recipeCommand.getSource())
+                () -> assertEquals(recipe.getSource(), recipeCommand.getSource()),
+                () -> assertNotNull(recipeCommand.getNotes()),
+                () -> assertEquals(recipe.getNotes().getNotes(), recipeCommand.getNotes().getNotes()),
+                () -> assertEquals(recipe.getNotes().getId(), recipeCommand.getNotes().getId())
         );
 
+        assertAll(
+                () -> assertThat(recipeCommand.getCategories()).isNotNull().hasSameSizeAs(recipe.getCategories()),
+                () -> assertThat(recipeCommand.getIngredients()).isNotNull().hasSameSizeAs(recipe.getIngredients())
+        );
+
+        recipeCommand.getCategories()
+                .forEach(categoryCommand ->
+                        assertTrue(
+                                () -> recipe.getCategories()
+                                        .stream()
+                                        .anyMatch(category -> Objects.equals(category.getId(), categoryCommand.getId()) && Objects.equals(category.getDescription(), categoryCommand.getDescription())))
+                );
+        recipeCommand.getIngredients()
+                .forEach(ingredientCommand ->
+                        assertTrue(
+                                () -> recipe.getIngredients()
+                                        .stream()
+                                        .anyMatch(ingredient -> Objects.equals(ingredient.getId(), ingredientCommand.getId()) && Objects.equals(ingredient.getDescription(), ingredientCommand.getDescription())))
+                );
     }
-
-
 }
