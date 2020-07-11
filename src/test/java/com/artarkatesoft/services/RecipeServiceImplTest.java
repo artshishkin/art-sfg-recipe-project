@@ -1,21 +1,26 @@
 package com.artarkatesoft.services;
 
+import com.artarkatesoft.commands.RecipeCommand;
+import com.artarkatesoft.converters.RecipeToRecipeCommandConverter;
 import com.artarkatesoft.domain.Recipe;
 import com.artarkatesoft.repositories.RecipeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.BeanUtils;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
@@ -26,6 +31,8 @@ class RecipeServiceImplTest {
 
     @Mock
     RecipeRepository recipeRepository;
+    @Mock
+    RecipeToRecipeCommandConverter toRecipeCommandConverter;
 
     @InjectMocks
     RecipeServiceImpl recipeService;
@@ -73,5 +80,36 @@ class RecipeServiceImplTest {
         then(recipeRepository).should(never()).findAll();
         then(recipeRepository).shouldHaveNoMoreInteractions();
         assertThat(foundRecipe.getId()).isEqualTo(recipeOptional.get().getId());
+    }
+
+    @Test
+    void testGetRecipeCommandById() {
+        //given
+        Recipe recipe = recipes.iterator().next();
+        Long id = recipe.getId();
+        given(recipeRepository.findById(id)).willReturn(Optional.of(recipe));
+        RecipeCommand recipeCommand = new RecipeCommand();
+        BeanUtils.copyProperties(recipe, recipeCommand);
+        given(toRecipeCommandConverter.convert(any(Recipe.class))).willReturn(recipeCommand);
+
+        //when
+        RecipeCommand foundRecipeCommand = recipeService.getCommandById(id);
+        //then
+        then(recipeRepository).should().findById(eq(id));
+        then(toRecipeCommandConverter).should().convert(any(Recipe.class));
+        assertNotNull(foundRecipeCommand);
+        assertThat(foundRecipeCommand.getId()).isEqualTo(id);
+    }
+
+    @Test
+    void testGetRecipeCommandByIdNotFound() {
+        //given
+        long id = 123L;
+        given(recipeRepository.findById(anyLong())).willReturn(Optional.empty());
+
+        //when
+        Executable executable = () -> recipeService.getCommandById(id);
+        //then
+        assertThrows(RuntimeException.class, executable);
     }
 }

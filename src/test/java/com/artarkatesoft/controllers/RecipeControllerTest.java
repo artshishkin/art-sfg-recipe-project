@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -40,31 +41,41 @@ class RecipeControllerTest {
     @Captor
     ArgumentCaptor<RecipeCommand> recipeCommandCaptor;
 
+    private static final long ID = 2L;
+    private static final String DESCRIPTION = "DDeessccrriippttiioonn";
+    private static final int COOK_TIME = 12;
+    private RecipeCommand recipeCommand;
+
     @BeforeEach
     void setUp() {
+
         mockMvc = MockMvcBuilders.standaloneSetup(recipeController).build();
+
+        recipeCommand = new RecipeCommand();
+        recipeCommand.setId(ID);
+        recipeCommand.setDescription(DESCRIPTION);
+        recipeCommand.setCookTime(COOK_TIME);
     }
 
     @Test
     void testShowRecipeById() throws Exception {
         //given
-        Long id = 2L;
         Recipe recipe;
         recipe = new Recipe();
-        recipe.setId(id);
+        recipe.setId(ID);
         recipe.setDescription("Desc1");
 
         given(recipeService.getById(anyLong())).willReturn(recipe);
 
         //when
-        mockMvc.perform(get("/recipe/{id}/show", id))
+        mockMvc.perform(get("/recipe/{id}/show", ID))
                 .andExpect(matchAll(
                         status().isOk(),
                         view().name("recipe/show"),
                         model().attribute("recipe", recipe)
                 ));
         //then
-        then(recipeService).should(times(1)).getById(eq(id));
+        then(recipeService).should(times(1)).getById(eq(ID));
         then(recipeService).should(never()).getAllRecipes();
         then(recipeService).shouldHaveNoMoreInteractions();
     }
@@ -76,21 +87,15 @@ class RecipeControllerTest {
                         status().isOk(),
                         view().name("recipe/recipeform"),
                         model().attributeExists("recipe"),
-                        model().attribute("recipe", notNull())
+                        model().attribute("recipe", notNullValue(RecipeCommand.class))
                 ));
     }
 
     @Test
     void testPostNewRecipeForm() throws Exception {
         //given
-        final long id = 2L;
-        final String DESCRIPTION = "DDeessccrriippttiioonn";
-        final int COOK_TIME = 12;
 
-        RecipeCommand recipeCommand = new RecipeCommand();
-        recipeCommand.setId(id);
-        recipeCommand.setDescription(DESCRIPTION);
-        recipeCommand.setCookTime(COOK_TIME);
+
         given(recipeService.saveRecipeCommand(any(RecipeCommand.class))).willReturn(recipeCommand);
         //when
         mockMvc
@@ -103,7 +108,7 @@ class RecipeControllerTest {
                 .andExpect(
                         matchAll(
                                 status().is3xxRedirection(),
-                                redirectedUrlTemplate("/recipe/{id}/show", id)
+                                redirectedUrlTemplate("/recipe/{id}/show", ID)
                         )
                 );
         //then
@@ -112,4 +117,23 @@ class RecipeControllerTest {
         assertThat(commandCaptorValue.getDescription()).isEqualTo(DESCRIPTION);
         assertThat(commandCaptorValue.getCookTime()).isEqualTo(COOK_TIME);
     }
+
+    @Test
+    void testUpdateRecipeForm() throws Exception {
+        //given
+        given(recipeService.getCommandById(ID)).willReturn(recipeCommand);
+
+        //when
+        mockMvc.perform(get("/recipe/{id}/update", ID))
+                .andExpect(matchAll(
+                        status().isOk(),
+                        view().name("recipe/recipeform"),
+                        model().attributeExists("recipe"),
+                        model().attribute("recipe", notNullValue(RecipeCommand.class))
+                ));
+        //then
+        then(recipeService).should().getCommandById(eq(ID));
+    }
+
+
 }
