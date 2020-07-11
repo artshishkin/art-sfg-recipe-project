@@ -56,7 +56,7 @@ class IngredientControllerTest {
 
         Set<IngredientCommand> ingredients = LongStream
                 .rangeClosed(1, 5)
-                .mapToObj(i -> new IngredientCommand(i, "desc" + i, BigDecimal.valueOf(i), uom))
+                .mapToObj(i -> new IngredientCommand(i, RECIPE_ID,"desc" + i, BigDecimal.valueOf(i), uom))
                 .collect(Collectors.toSet());
 
         recipeCommand.setIngredients(ingredients);

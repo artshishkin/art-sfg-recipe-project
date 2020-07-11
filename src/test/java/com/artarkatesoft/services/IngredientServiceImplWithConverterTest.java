@@ -45,6 +45,7 @@ class IngredientServiceImplWithConverterTest {
         Long id = 2L;
         Long recipeId = 1L;
         Recipe recipe = new Recipe();
+        recipe.setId(recipeId);
 
         LongStream.rangeClosed(1, 5)
                 .mapToObj(this::createFakeIngredient)
@@ -56,6 +57,7 @@ class IngredientServiceImplWithConverterTest {
         //then
         then(recipeRepository).should().findById(eq(recipeId));
         assertThat(ingredientCommand.getId()).isEqualTo(id);
+        assertThat(ingredientCommand.getRecipeId()).isEqualTo(recipeId);
 
     }
 

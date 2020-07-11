@@ -24,6 +24,7 @@ public class IngredientToIngredientCommandConverter extends AbstractConverter<In
         if (ingredientCommand == null) return null;
         UnitOfMeasureCommand unitOfMeasureCommand = uomConverter.convert(ingredient.getUom());
         ingredientCommand.setUom(unitOfMeasureCommand);
+        if (ingredient.getRecipe() != null) ingredientCommand.setRecipeId(ingredient.getRecipe().getId());
         return ingredientCommand;
     }
 }
