@@ -41,13 +41,13 @@
                                 <td th:text="${ingredient.uom.description}">Bottle</td>
                                 <td th:text="${ingredient.description}">Desc</td>
                                 <td><a href="#"
-                                       th:href="@{/recipe/{recipeId}/ingredient/{id}/show(recipeId=${recipe.id},id=${ingredient.id})}">View</a>
+                                       th:href="@{/recipe/{recipeId}/ingredients/{id}/show(recipeId=${recipe.id},id=${ingredient.id})}">View</a>
                                 </td>
                                 <td><a href="#"
-                                       th:href="@{/recipe/{recipeId}/ingredient/{id}/update(recipeId=${recipe.id},id=${ingredient.id})}">Update</a>
+                                       th:href="@{/recipe/{recipeId}/ingredients/{id}/update(recipeId=${recipe.id},id=${ingredient.id})}">Update</a>
                                 </td>
                                 <td><a href="#"
-                                       th:href="@{/recipe/{recipeId}/ingredient/{id}/delete(recipeId=${recipe.id},id=${ingredient.id})}">Delete</a>
+                                       th:href="@{/recipe/{recipeId}/ingredients/{id}/delete(recipeId=${recipe.id},id=${ingredient.id})}">Delete</a>
                                 </td>
                             </tr>
                             </tbody>
