@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Recipes Home</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+          integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu"
+          crossorigin="anonymous"
+          th:href="@{/webjars/bootstrap/3.4.1/css/bootstrap.min.css}">
+
+</head>
+<!--/*@thymesVar id="ingredients" type="java.util.List<com.artarkatesoft.commands.IngredientCommand>"*/-->
+<body>
+<div class="container-fluid" style="margin-top: 20px">
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h1 class="panel-title" th:text="'Recipes Page'">Welcome to my Recipes</h1>
+                </div>
+                <div class="panel-body">
+                    <div class="table-responsive" th:if="${not #lists.isEmpty(ingredients)}">
+                        <table class="table table-hover table-bordered">
+                            <thead class="thead-inverse">
+                            <tr>
+                                <th>ID</th>
+                                <th>Amount</th>
+                                <th>UOM</th>
+                                <th>Description</th>
+                                <th>View</th>
+                                <th>Update</th>
+                                <th>Delete</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            <tr th:each="ingredient : ${ingredients}">
+                                <td th:text="${ingredient.id}">2</td>
+                                <td th:text="${ingredient.amount}">3</td>
+                                <td th:text="${ingredient.uom.description}">Bottle</td>
+                                <td th:text="${ingredient.description}">Desc</td>
+                                <td><a href="#" th:href="@{/recipe/{recipeId}/ingredient/{id}/show(recipeId=${ingredient.recipeId},id=${ingredient.id})}">View</a></td>
+                                <td><a href="#" th:href="@{/recipe/{recipeId}/ingredient/{id}/update(recipeId=${ingredient.recipeId},id=${ingredient.id})}">Update</a></td>
+                                <td><a href="#" th:href="@{/recipe/{recipeId}/ingredient/{id}/delete(recipeId=${ingredient.recipeId},id=${ingredient.id})}">Delete</a></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script th:src="@{/webjars/jquery/1.11.1/jquery.min.js}"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+        integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd"
+        crossorigin="anonymous"
+        th:src="@{/webjars/bootstrap/3.4.1/js/bootstrap.min.js}"></script>
+</html>
