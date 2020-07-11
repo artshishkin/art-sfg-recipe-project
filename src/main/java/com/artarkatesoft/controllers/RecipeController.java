@@ -4,10 +4,12 @@ import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.domain.Recipe;
 import com.artarkatesoft.services.RecipeService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @Controller
 @RequestMapping("recipe")
 @RequiredArgsConstructor
@@ -31,7 +33,7 @@ public class RecipeController {
     @PostMapping
     public String createOrUpdate(@ModelAttribute("recipe") RecipeCommand recipeCommand) {
         RecipeCommand savedRecipeCommand = recipeService.saveRecipeCommand(recipeCommand);
-        return "redirect:/recipe/"+savedRecipeCommand.getId()+"/show";
+        return "redirect:/recipe/" + savedRecipeCommand.getId() + "/show";
     }
 
     @GetMapping("{id}/update")
@@ -39,6 +41,13 @@ public class RecipeController {
         RecipeCommand recipeCommand = recipeService.getCommandById(id);
         model.addAttribute("recipe", recipeCommand);
         return "recipe/recipeform";
+    }
+
+    @GetMapping("{id}/delete")
+    public String deleteRecipe(@PathVariable Long id) {
+        log.debug("Deleting recipe with id {}", id);
+        recipeService.deleteById(id);
+        return "redirect:/";
     }
 
 

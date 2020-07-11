@@ -10,4 +10,6 @@ public interface RecipeService {
     Recipe getById(Long id);
     RecipeCommand saveRecipeCommand(RecipeCommand recipeCommand);
     RecipeCommand getCommandById(Long id);
+
+    void deleteById(Long id);
 }

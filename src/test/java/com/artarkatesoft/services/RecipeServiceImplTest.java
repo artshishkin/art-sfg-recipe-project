@@ -112,4 +112,14 @@ class RecipeServiceImplTest {
         //then
         assertThrows(RuntimeException.class, executable);
     }
+
+    @Test
+    void testDeleteById() {
+        //given
+        Long id = 1L;
+        //when
+        recipeService.deleteById(id);
+        //then
+        then(recipeRepository).should().deleteById(eq(id));
+    }
 }

@@ -135,5 +135,16 @@ class RecipeControllerTest {
         then(recipeService).should().getCommandById(eq(ID));
     }
 
-
+    @Test
+    void testDeleteById() throws Exception {
+        //given
+        //when
+        mockMvc.perform(get("/recipe/{id}/delete",ID))
+                .andExpect(matchAll(
+                        status().is3xxRedirection(),
+                        redirectedUrl("/")
+                ));
+        //then
+        then(recipeService).should(times(1)).deleteById(eq(ID));
+    }
 }
