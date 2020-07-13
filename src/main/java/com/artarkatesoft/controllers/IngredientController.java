@@ -50,6 +50,18 @@ public class IngredientController {
         return "recipe/ingredient/ingredient_form";
     }
 
+    @GetMapping("{recipeId}/ingredients/new")
+    public String showNewIngredientForm(@PathVariable("recipeId") Long recipeId,
+                                 Model model) {
+        RecipeCommand recipeCommand = recipeService.getCommandById(recipeId);
+        // TODO: 13.07.2020 Raise Exception if null
+        IngredientCommand ingredientCommand = new IngredientCommand();
+        ingredientCommand.setRecipeId(recipeId);
+        model.addAttribute("ingredient", ingredientCommand);
+        model.addAttribute("uomList", uomService.listAllUoms());
+        return "recipe/ingredient/ingredient_form";
+    }
+
     @PostMapping("{recipeId}/ingredients")
     public String createOrUpdateIngredient(@ModelAttribute("ingredient") IngredientCommand ingredientCommand, @PathVariable("recipeId") Long recipeId) {
         if (!Objects.equals(recipeId, ingredientCommand.getRecipeId()))

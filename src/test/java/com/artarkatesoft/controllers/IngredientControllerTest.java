@@ -131,6 +131,25 @@ class IngredientControllerTest {
     }
 
     @Test
+    void testNewIngredientForm() throws Exception {
+        //given
+//        given(recipeService.getCommandById(anyLong()))
+//                .willReturn(defaultRecipeCommand);
+        given(uomService.listAllUoms()).willReturn(Collections.emptyList());
+        //when
+        mockMvc.perform(get("/recipe/{recipeId}/ingredients/new", RECIPE_ID))
+                .andExpect(status().isOk())
+                .andExpect(view().name("recipe/ingredient/ingredient_form"))
+                .andExpect(model().attributeExists("ingredient", "uomList"))
+                .andExpect(model().attribute("uomList", notNullValue()))
+                .andExpect(model().attribute("ingredient", notNullValue(IngredientCommand.class)));
+
+        //then
+//        then(recipeService).should().getCommandById(eq(RECIPE_ID));
+        then(uomService).should().listAllUoms();
+    }
+
+    @Test
     public void testCreateOrUpdateIngredient() throws Exception {
         //given
         IngredientCommand someCommand = defaultRecipeCommand.getIngredients().iterator().next();
