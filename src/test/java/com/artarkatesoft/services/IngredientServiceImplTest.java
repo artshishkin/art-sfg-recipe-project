@@ -107,7 +107,7 @@ class IngredientServiceImplTest {
         given(uomRepository.findById(anyLong())).willReturn(Optional.of(uom));
         given(toIngredientCommandConverter.convert(ingredientRepo)).willReturn(commandToSave);
         //when
-        IngredientCommand ingredientCommand = ingredientService.saveIngredientCommand(commandToSave);
+        IngredientCommand savedCommand = ingredientService.saveIngredientCommand(commandToSave);
         //then
         then(recipeRepository).should().findById(anyLong());
         then(uomRepository).should().findById(anyLong());

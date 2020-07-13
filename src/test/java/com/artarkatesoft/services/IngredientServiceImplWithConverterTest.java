@@ -1,12 +1,14 @@
 package com.artarkatesoft.services;
 
 import com.artarkatesoft.commands.IngredientCommand;
+import com.artarkatesoft.commands.UnitOfMeasureCommand;
 import com.artarkatesoft.converters.IngredientCommandToIngredientConverter;
 import com.artarkatesoft.converters.IngredientToIngredientCommandConverter;
 import com.artarkatesoft.converters.UnitOfMeasureCommandToUnitOfMeasureConverter;
 import com.artarkatesoft.converters.UnitOfMeasureToUnitOfMeasureCommandConverter;
 import com.artarkatesoft.domain.Ingredient;
 import com.artarkatesoft.domain.Recipe;
+import com.artarkatesoft.domain.UnitOfMeasure;
 import com.artarkatesoft.repositories.RecipeRepository;
 import com.artarkatesoft.repositories.UnitOfMeasureRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,12 +17,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.LongStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -37,6 +41,8 @@ class IngredientServiceImplWithConverterTest {
     IngredientToIngredientCommandConverter toIngredientCommandConverter;
     IngredientCommandToIngredientConverter toIngredientConverter;
 
+    private Recipe recipe;
+
     @BeforeEach
     void setUp() {
         toIngredientCommandConverter = new IngredientToIngredientCommandConverter(
@@ -47,6 +53,14 @@ class IngredientServiceImplWithConverterTest {
         );
         ingredientService = new IngredientServiceImpl(recipeRepository,
                 uomRepository, toIngredientCommandConverter, toIngredientConverter);
+        Long recipeId = 1L;
+
+        recipe = new Recipe();
+        LongStream.rangeClosed(1, 5)
+                .mapToObj(this::createFakeIngredient)
+                .forEach(recipe::addIngredient);
+        recipe.setId(recipeId);
+
     }
 
     @Test
@@ -76,5 +90,41 @@ class IngredientServiceImplWithConverterTest {
         ingredient.setId(id);
         ingredient.setDescription("Desc" + id);
         return ingredient;
+    }
+
+    @Test
+    public void saveIngredientCommand() {
+        //given
+        Long recipeId = recipe.getId();
+        Long id = 2L;
+        Ingredient ingredientRepo = recipe.getIngredients()
+                .stream()
+                .filter(ingredient -> Objects.equals(ingredient.getId(), id))
+                .findAny().get();
+        UnitOfMeasure uom = new UnitOfMeasure();
+        uom.setId(12L);
+        uom.setDescription("BBottle");
+
+        UnitOfMeasureCommand uomCommand = new UnitOfMeasureCommand();
+        uomCommand.setId(12L);
+        uomCommand.setDescription("BBottle");
+
+        IngredientCommand commandToSave = new IngredientCommand(id, recipeId, "New Description", BigDecimal.valueOf(333), uomCommand);
+
+        given(recipeRepository.findById(anyLong())).willReturn(Optional.of(recipe));
+        given(recipeRepository.save(any(Recipe.class))).willReturn(recipe);
+        given(uomRepository.findById(anyLong())).willReturn(Optional.of(uom));
+        //when
+        IngredientCommand savedCommand = ingredientService.saveIngredientCommand(commandToSave);
+        //then
+        then(recipeRepository).should().findById(anyLong());
+        then(uomRepository).should().findById(anyLong());
+        then(recipeRepository).should().save(any(Recipe.class));
+        assertAll(
+                () -> assertThat(savedCommand.getId()).isEqualTo(ingredientRepo.getId()),
+                () -> assertThat(savedCommand.getRecipeId()).isEqualTo(recipeId),
+                () -> assertThat(savedCommand.getDescription()).isEqualTo(ingredientRepo.getDescription()),
+                () -> assertThat(savedCommand.getUom().getId()).isEqualTo(ingredientRepo.getUom().getId())
+        );
     }
 }
