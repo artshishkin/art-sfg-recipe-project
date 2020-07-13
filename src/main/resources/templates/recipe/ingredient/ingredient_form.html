@@ -43,10 +43,9 @@
                                 </div>
 
                                 <div class="col-md-9 form-group">
-                                    <select class="form-control" name="uom.id">
+                                    <select class="form-control" th:field="*{uom.id}">
                                         <option th:each="uomEach : ${uomList}"
                                                 th:value="${uomEach.id}"
-                                                th:selected="${uomEach.id.equals(ingredient.uom?.id)}"
                                                 th:text="${uomEach.description}">Each
                                         </option>
                                         <option th:remove="all">Cup</option>
