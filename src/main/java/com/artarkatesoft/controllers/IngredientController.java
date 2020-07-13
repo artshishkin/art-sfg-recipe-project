@@ -50,9 +50,16 @@ public class IngredientController {
         return "recipe/ingredient/ingredient_form";
     }
 
+    @GetMapping("{recipeId}/ingredients/{id}/delete")
+    public String deleteIngredient(@PathVariable("recipeId") Long recipeId,
+                                   @PathVariable("id") Long id) {
+        ingredientService.deleteByIdAndRecipeId(id, recipeId);
+        return "redirect:/recipe/" + recipeId + "/ingredients";
+    }
+
     @GetMapping("{recipeId}/ingredients/new")
     public String showNewIngredientForm(@PathVariable("recipeId") Long recipeId,
-                                 Model model) {
+                                        Model model) {
         RecipeCommand recipeCommand = recipeService.getCommandById(recipeId);
         // TODO: 13.07.2020 Raise Exception if null
         IngredientCommand ingredientCommand = new IngredientCommand();

@@ -115,4 +115,17 @@ class IngredientServiceImplTest {
         then(toIngredientCommandConverter).should().convert(any());
 
     }
+
+    @Test
+    void testDeleteByIdAndRecipeId() {
+        //given
+        Long recipeId = recipe.getId();
+        Long ingredientId = recipe.getIngredients().iterator().next().getId();
+        given(recipeRepository.findById(anyLong())).willReturn(Optional.of(recipe));
+        //when
+        ingredientService.deleteByIdAndRecipeId(ingredientId, recipeId);
+        //then
+        then(recipeRepository).should().findById(eq(recipeId));
+        then(recipeRepository).should().save(any(Recipe.class));
+    }
 }

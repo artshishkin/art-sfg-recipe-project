@@ -12,6 +12,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -69,6 +70,15 @@ public class Recipe {
 
     public Set<Ingredient> getIngredients() {
         return Collections.unmodifiableSet(ingredients);
+    }
+
+    public void removeIngredient(Ingredient ingredient) {
+        ingredient.setRecipe(null);
+        ingredients.remove(ingredient);
+    }
+
+    public void removeIngredientById(Long ingredientId) {
+        ingredients.removeIf(ingredient -> Objects.equals(ingredient.getId(), ingredientId));
     }
 
     public void addCategory(Category category) {

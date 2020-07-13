@@ -133,8 +133,8 @@ class IngredientControllerTest {
     @Test
     void testNewIngredientForm() throws Exception {
         //given
-//        given(recipeService.getCommandById(anyLong()))
-//                .willReturn(defaultRecipeCommand);
+        given(recipeService.getCommandById(anyLong()))
+                .willReturn(defaultRecipeCommand);
         given(uomService.listAllUoms()).willReturn(Collections.emptyList());
         //when
         mockMvc.perform(get("/recipe/{recipeId}/ingredients/new", RECIPE_ID))
@@ -145,7 +145,7 @@ class IngredientControllerTest {
                 .andExpect(model().attribute("ingredient", notNullValue(IngredientCommand.class)));
 
         //then
-//        then(recipeService).should().getCommandById(eq(RECIPE_ID));
+        then(recipeService).should().getCommandById(eq(RECIPE_ID));
         then(uomService).should().listAllUoms();
     }
 
@@ -161,9 +161,8 @@ class IngredientControllerTest {
         commandParams.add("uom.id", someCommand.getUom().getId().toString());
 
         //when
-//        mockMvc.perform(post("/recipe/{recipeId}/ingredients", RECIPE_ID)
-        mockMvc
-                .perform(post("/recipe/1/ingredients")
+        mockMvc.perform(
+                post("/recipe/{recipeId}/ingredients", RECIPE_ID)
                         .contentType(APPLICATION_FORM_URLENCODED)
                         .params(commandParams))
                 .andExpect(status().is3xxRedirection())
@@ -178,5 +177,18 @@ class IngredientControllerTest {
                 () -> assertThat(captorValue.getDescription()).isEqualTo(someCommand.getDescription()),
                 () -> assertThat(captorValue.getAmount()).isEqualTo(someCommand.getAmount())
         );
+    }
+
+    @Test
+    public void testDeleteIngredient() throws Exception {
+        //given
+        Long recipeId = 100L;
+        Long ingredientId = 123L;
+        //when
+        mockMvc.perform(get("/recipe/{recipeId}/ingredients/{id}/delete", recipeId, ingredientId))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlTemplate("/recipe/{recipeId}/ingredients", recipeId));
+        //then
+        then(ingredientService).should().deleteByIdAndRecipeId(eq(ingredientId), eq(recipeId));
     }
 }

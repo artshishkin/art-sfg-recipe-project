@@ -25,6 +25,12 @@ public class IngredientServiceImpl implements IngredientService {
 
     @Override
     public IngredientCommand findIngredientCommandByIdAndRecipeId(Long id, Long recipeId) {
+        return findIngredientByIdAndRecipeId(id, recipeId)
+                .map(toIngredientCommandConverter::convert)
+                .orElseThrow(() -> new RuntimeException("Ingredient not Found"));
+    }
+
+    private Optional<Ingredient> findIngredientByIdAndRecipeId(Long id, Long recipeId) {
         Recipe recipe = recipeRepository
                 .findById(recipeId)
                 .orElseThrow(() -> new RuntimeException("Recipe not found"));
@@ -32,9 +38,7 @@ public class IngredientServiceImpl implements IngredientService {
         return recipe.getIngredients()
                 .stream()
                 .filter(ingredient -> ingredient.getId().equals(id))
-                .findFirst()
-                .map(toIngredientCommandConverter::convert)
-                .orElseThrow(() -> new RuntimeException("Ingredient not Found"));
+                .findFirst();
     }
 
     @Override
@@ -79,5 +83,14 @@ public class IngredientServiceImpl implements IngredientService {
         }
         return toIngredientCommandConverter.convert(
                 savedIngredientOptional.orElseThrow(() -> new RuntimeException("Ingredient not saved")));
+    }
+
+    @Override
+    public void deleteByIdAndRecipeId(Long id, Long recipeId) {
+        Ingredient ingredient = findIngredientByIdAndRecipeId(id, recipeId)
+                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
+        Recipe recipe = ingredient.getRecipe();
+        recipe.removeIngredient(ingredient);
+        recipeRepository.save(recipe);
     }
 }
