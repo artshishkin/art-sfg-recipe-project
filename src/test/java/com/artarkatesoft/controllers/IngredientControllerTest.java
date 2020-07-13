@@ -5,28 +5,38 @@ import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.commands.UnitOfMeasureCommand;
 import com.artarkatesoft.services.IngredientService;
 import com.artarkatesoft.services.RecipeService;
+import com.artarkatesoft.services.UnitOfMeasureService;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,33 +49,38 @@ class IngredientControllerTest {
     RecipeService recipeService;
     @Mock
     IngredientService ingredientService;
+    @Mock
+    UnitOfMeasureService uomService;
 
     MockMvc mockMvc;
-    private RecipeCommand recipeCommand;
+    private RecipeCommand defaultRecipeCommand;
     public static final Long RECIPE_ID = 1L;
+
+    @Captor
+    ArgumentCaptor<IngredientCommand> commandCaptor;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(ingredientController).build();
 
-        recipeCommand = new RecipeCommand();
-        recipeCommand.setId(RECIPE_ID);
+        defaultRecipeCommand = new RecipeCommand();
+        defaultRecipeCommand.setId(RECIPE_ID);
         UnitOfMeasureCommand uom = new UnitOfMeasureCommand();
         uom.setId(1L);
         uom.setDescription("UomDesc");
 
         Set<IngredientCommand> ingredients = LongStream
                 .rangeClosed(1, 5)
-                .mapToObj(i -> new IngredientCommand(i, RECIPE_ID,"desc" + i, BigDecimal.valueOf(i), uom))
+                .mapToObj(i -> new IngredientCommand(i, RECIPE_ID, "desc" + i, BigDecimal.valueOf(i), uom))
                 .collect(Collectors.toSet());
 
-        recipeCommand.setIngredients(ingredients);
+        defaultRecipeCommand.setIngredients(ingredients);
     }
 
     @Test
     void testGetListOfIngredients() throws Exception {
         //given
-        given(recipeService.getCommandById(anyLong())).willReturn(recipeCommand);
+        given(recipeService.getCommandById(anyLong())).willReturn(defaultRecipeCommand);
 
         //when
         mockMvc.perform(get("/recipe/{recipeId}/ingredients", RECIPE_ID))
@@ -81,7 +96,7 @@ class IngredientControllerTest {
     @Test
     void testShowIngredient() throws Exception {
         //given
-        IngredientCommand ingredientCommand = recipeCommand.getIngredients().iterator().next();
+        IngredientCommand ingredientCommand = defaultRecipeCommand.getIngredients().iterator().next();
         given(ingredientService.findIngredientCommandByIdAndRecipeId(anyLong(), anyLong()))
                 .willReturn(ingredientCommand);
 
@@ -93,5 +108,56 @@ class IngredientControllerTest {
                 .andExpect(model().attribute("ingredient", notNullValue()));
         //then
         then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq(2L), eq(1L));
+    }
+
+    @Test
+    void testShowUpdateForm() throws Exception {
+        //given
+        IngredientCommand ingredientCommand = defaultRecipeCommand.getIngredients().iterator().next();
+        given(ingredientService.findIngredientCommandByIdAndRecipeId(anyLong(), anyLong()))
+                .willReturn(ingredientCommand);
+        given(uomService.listAllUoms()).willReturn(Collections.emptyList());
+        //when
+        mockMvc.perform(get("/recipe/1/ingredients/2/update"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("recipe/ingredient/ingredient_form"))
+                .andExpect(model().attributeExists("ingredient", "uomList"))
+                .andExpect(model().attribute("uomList", notNullValue()))
+                .andExpect(model().attribute("ingredient", notNullValue(IngredientCommand.class)));
+
+        //then
+        then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq(2L), eq(1L));
+        then(uomService).should().listAllUoms();
+    }
+
+    @Test
+    public void testCreateOrUpdateIngredient() throws Exception {
+        //given
+        IngredientCommand someCommand = defaultRecipeCommand.getIngredients().iterator().next();
+        MultiValueMap<String, String> commandParams = new LinkedMultiValueMap<>();
+        commandParams.add("id", someCommand.getId().toString());
+        commandParams.add("recipeId", RECIPE_ID.toString());
+        commandParams.add("amount", someCommand.getAmount().toString());
+        commandParams.add("description", someCommand.getDescription());
+        commandParams.add("uom.id", someCommand.getUom().getId().toString());
+
+        //when
+//        mockMvc.perform(post("/recipe/{recipeId}/ingredients", RECIPE_ID)
+        mockMvc
+                .perform(post("/recipe/1/ingredients")
+                        .contentType(APPLICATION_FORM_URLENCODED)
+                        .params(commandParams))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/recipe/1/ingredients"));
+        //then
+        then(ingredientService).should().saveIngredientCommand(commandCaptor.capture());
+        IngredientCommand captorValue = commandCaptor.getValue();
+        assertAll(
+                () -> assertThat(captorValue.getId()).isEqualTo(someCommand.getId()),
+                () -> assertThat(captorValue.getRecipeId()).isEqualTo(someCommand.getRecipeId()),
+                () -> assertThat(captorValue.getUom().getId()).isEqualTo(someCommand.getUom().getId()),
+                () -> assertThat(captorValue.getDescription()).isEqualTo(someCommand.getDescription()),
+                () -> assertThat(captorValue.getAmount()).isEqualTo(someCommand.getAmount())
+        );
     }
 }

@@ -28,7 +28,10 @@
                             <p th:text="${ingredient.description}">Description</p>
 
                         </div>
-
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-primary"
+                               th:href="@{/recipe/{recipeId}/ingredients/{id}/update(recipeId=${ingredient.recipeId},id=${ingredient.id})}">Edit</a>
+                        </div>
                     </div>
 
                 </div>

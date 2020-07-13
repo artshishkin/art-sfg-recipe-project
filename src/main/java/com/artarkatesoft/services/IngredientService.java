@@ -4,4 +4,6 @@ import com.artarkatesoft.commands.IngredientCommand;
 
 public interface IngredientService {
     IngredientCommand findIngredientCommandByIdAndRecipeId(Long id, Long recipeId);
+
+    IngredientCommand saveIngredientCommand(IngredientCommand ingredientCommand);
 }

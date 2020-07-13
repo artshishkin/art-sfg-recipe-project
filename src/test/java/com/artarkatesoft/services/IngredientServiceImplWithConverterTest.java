@@ -1,11 +1,14 @@
 package com.artarkatesoft.services;
 
 import com.artarkatesoft.commands.IngredientCommand;
+import com.artarkatesoft.converters.IngredientCommandToIngredientConverter;
 import com.artarkatesoft.converters.IngredientToIngredientCommandConverter;
+import com.artarkatesoft.converters.UnitOfMeasureCommandToUnitOfMeasureConverter;
 import com.artarkatesoft.converters.UnitOfMeasureToUnitOfMeasureCommandConverter;
 import com.artarkatesoft.domain.Ingredient;
 import com.artarkatesoft.domain.Recipe;
 import com.artarkatesoft.repositories.RecipeRepository;
+import com.artarkatesoft.repositories.UnitOfMeasureRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,15 +31,22 @@ class IngredientServiceImplWithConverterTest {
 
     @Mock
     RecipeRepository recipeRepository;
+    @Mock
+    UnitOfMeasureRepository uomRepository;
 
     IngredientToIngredientCommandConverter toIngredientCommandConverter;
+    IngredientCommandToIngredientConverter toIngredientConverter;
 
     @BeforeEach
     void setUp() {
         toIngredientCommandConverter = new IngredientToIngredientCommandConverter(
                 new UnitOfMeasureToUnitOfMeasureCommandConverter()
         );
-        ingredientService = new IngredientServiceImpl(recipeRepository, toIngredientCommandConverter);
+        toIngredientConverter = new IngredientCommandToIngredientConverter(
+                new UnitOfMeasureCommandToUnitOfMeasureConverter()
+        );
+        ingredientService = new IngredientServiceImpl(recipeRepository,
+                uomRepository, toIngredientCommandConverter, toIngredientConverter);
     }
 
     @Test
