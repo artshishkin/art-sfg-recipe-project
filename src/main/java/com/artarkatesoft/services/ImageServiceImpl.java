@@ -24,4 +24,11 @@ public class ImageServiceImpl implements ImageService {
         recipe.setImage(file.getBytes());
         recipeRepository.save(recipe);
     }
+
+    @Override
+    public byte[] getImageByRecipeId(Long recipeId) {
+        Recipe recipe = recipeRepository.findById(recipeId)
+                .orElseThrow(() -> new RuntimeException("Recipe with id " + recipeId + "not found"));
+        return recipe.getImage();
+    }
 }

@@ -4,10 +4,7 @@ import com.artarkatesoft.services.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @Controller
@@ -27,6 +24,12 @@ public class ImageController {
                                         @RequestParam("imagefile") MultipartFile file) {
         imageService.saveImageFile(id, file);
         return "redirect:/recipe/" + id + "/show";
+    }
+
+    @ResponseBody
+    @GetMapping("/recipe/{id}/recipe_image")
+    public byte[] getRecipeImage(@PathVariable("id") Long recipeId) {
+        return imageService.getImageByRecipeId(recipeId);
     }
 
 }

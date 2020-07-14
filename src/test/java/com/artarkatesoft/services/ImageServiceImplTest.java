@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class ImageServiceImplTest {
@@ -68,5 +69,22 @@ class ImageServiceImplTest {
         then(recipeRepository).should(never()).save(any(Recipe.class));
         then(recipeRepository).shouldHaveNoMoreInteractions();
 
+    }
+
+    @Test
+    void testGetImageByRecipeId() {
+        //given
+        Long recipeId = 1L;
+        Recipe recipe = new Recipe();
+        recipe.setId(recipeId);
+        byte[] fakeImage = "This is fake image".getBytes();
+        recipe.setImage(fakeImage);
+        given(recipeRepository.findById(anyLong())).willReturn(Optional.of(recipe));
+
+        //when
+        byte[] retrievedImage = imageService.getImageByRecipeId(recipeId);
+        //then
+        then(recipeRepository).should(times(1)).findById(eq(recipeId));
+        assertThat(retrievedImage).isEqualTo(fakeImage);
     }
 }
