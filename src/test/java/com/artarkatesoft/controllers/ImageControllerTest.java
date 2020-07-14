@@ -19,6 +19,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -79,6 +80,7 @@ class ImageControllerTest {
         //when
         MvcResult mvcResult = mockMvc.perform(get("/recipe/{id}/recipe_image", recipeId))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(IMAGE_JPEG_VALUE))
                 .andReturn();
         //then
         then(imageService).should().getImageByRecipeId(eq(recipeId));

@@ -2,6 +2,7 @@ package com.artarkatesoft.controllers;
 
 import com.artarkatesoft.services.ImageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class ImageController {
     }
 
     @ResponseBody
-    @GetMapping("/recipe/{id}/recipe_image")
+    @GetMapping(value = "/recipe/{id}/recipe_image", produces = MediaType.IMAGE_JPEG_VALUE)
     public byte[] getRecipeImage(@PathVariable("id") Long recipeId) {
         return imageService.getImageByRecipeId(recipeId);
     }
