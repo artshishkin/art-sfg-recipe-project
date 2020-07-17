@@ -3,8 +3,10 @@ package com.artarkatesoft.services;
 import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.converters.RecipeToRecipeCommandConverter;
 import com.artarkatesoft.domain.Recipe;
+import com.artarkatesoft.exceptions.NotFoundException;
 import com.artarkatesoft.repositories.RecipeRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -83,6 +85,21 @@ class RecipeServiceImplTest {
     }
 
     @Test
+    @DisplayName("when recipe with id does not exist then should throw NotFoundException")
+    void getByIdWhenNotFound() {
+        //given
+        Long id = 700L;
+        given(recipeRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        Executable findRecipeExecution = () -> recipeService.getById(id);
+        //then
+        assertThrows(NotFoundException.class, findRecipeExecution);
+        then(recipeRepository).should(times(1)).findById(eq(id));
+        then(recipeRepository).should(never()).findAll();
+        then(recipeRepository).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
     void testGetRecipeCommandById() {
         //given
         Recipe recipe = recipes.iterator().next();
@@ -110,7 +127,7 @@ class RecipeServiceImplTest {
         //when
         Executable executable = () -> recipeService.getCommandById(id);
         //then
-        assertThrows(RuntimeException.class, executable);
+        assertThrows(NotFoundException.class, executable);
     }
 
     @Test

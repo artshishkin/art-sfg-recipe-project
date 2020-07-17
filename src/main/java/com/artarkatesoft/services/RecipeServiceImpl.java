@@ -2,6 +2,7 @@ package com.artarkatesoft.services;
 
 import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.domain.Recipe;
+import com.artarkatesoft.exceptions.NotFoundException;
 import com.artarkatesoft.repositories.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public Recipe getById(Long id) {
-        return recipeRepository.findById(id).orElseThrow(() -> new RuntimeException("Recipe with id " + id + " Not found"));
+        return recipeRepository.findById(id).orElseThrow(() -> new NotFoundException("Recipe with id " + id + " Not found"));
     }
 
     @Override
