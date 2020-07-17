@@ -2,12 +2,15 @@ package com.artarkatesoft.controllers;
 
 import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.domain.Recipe;
+import com.artarkatesoft.exceptions.NotFoundException;
 import com.artarkatesoft.services.RecipeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 @Slf4j
 @Controller
@@ -48,6 +51,13 @@ public class RecipeController {
         log.debug("Deleting recipe with id {}", id);
         recipeService.deleteById(id);
         return "redirect:/";
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ModelAndView handleNotFound() {
+        log.error("Handling not found exception");
+        return new ModelAndView("404error");
     }
 
 
