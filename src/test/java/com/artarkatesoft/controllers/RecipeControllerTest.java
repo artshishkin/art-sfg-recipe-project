@@ -2,8 +2,10 @@ package com.artarkatesoft.controllers;
 
 import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.domain.Recipe;
+import com.artarkatesoft.exceptions.NotFoundException;
 import com.artarkatesoft.services.RecipeService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -13,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,6 +84,21 @@ class RecipeControllerTest {
     }
 
     @Test
+    @DisplayName("when Recipe not found should return Status 404")
+    void testShowRecipeByIdWhenNotFound() throws Exception {
+        //given
+        given(recipeService.getById(anyLong())).willThrow(NotFoundException.class);
+
+        //when
+        mockMvc.perform(get("/recipe/{id}/show", ID))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+        //then
+        then(recipeService).should(times(1)).getById(eq(ID));
+        then(recipeService).should(never()).getAllRecipes();
+        then(recipeService).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
     void testGetNewRecipeForm() throws Exception {
         mockMvc.perform(get("/recipe/new"))
                 .andExpect(matchAll(
@@ -139,7 +157,7 @@ class RecipeControllerTest {
     void testDeleteById() throws Exception {
         //given
         //when
-        mockMvc.perform(get("/recipe/{id}/delete",ID))
+        mockMvc.perform(get("/recipe/{id}/delete", ID))
                 .andExpect(matchAll(
                         status().is3xxRedirection(),
                         redirectedUrl("/")
