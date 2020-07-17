@@ -101,6 +101,18 @@ class RecipeControllerTest {
     }
 
     @Test
+    @DisplayName("when get Recipe by ID with wrong String value should return Status 400")
+    void testShowRecipeByIdWhenWrongFormat() throws Exception {
+        //when
+        mockMvc.perform(get("/recipe/{id}/show", "BlaBla"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(view().name("400error"))
+                .andExpect(model().attributeExists("exception"));
+        //then
+        then(recipeService).shouldHaveNoInteractions();
+    }
+
+    @Test
     void testGetNewRecipeForm() throws Exception {
         mockMvc.perform(get("/recipe/new"))
                 .andExpect(matchAll(
