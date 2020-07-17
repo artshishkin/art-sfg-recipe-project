@@ -52,7 +52,10 @@ class RecipeControllerTest {
     @BeforeEach
     void setUp() {
 
-        mockMvc = MockMvcBuilders.standaloneSetup(recipeController).build();
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(recipeController)
+                .setControllerAdvice(new ControllerExceptionHandler())
+                .build();
 
         recipeCommand = new RecipeCommand();
         recipeCommand.setId(ID);

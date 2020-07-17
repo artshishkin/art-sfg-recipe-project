@@ -3,6 +3,7 @@ package com.artarkatesoft.controllers;
 import com.artarkatesoft.services.ImageService;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,6 +13,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +39,10 @@ class ImageControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(imageController).build();
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(imageController)
+                .setControllerAdvice(new ControllerExceptionHandler())
+                .build();
     }
 
     @Test
@@ -87,5 +92,17 @@ class ImageControllerTest {
         MockHttpServletResponse response = mvcResult.getResponse();
         byte[] receivedImage = response.getContentAsByteArray();
         assertThat(receivedImage).isEqualTo(imageBytes);
+    }
+
+    @Test
+    @DisplayName("when get Image of Recipe by ID with wrong String value should return Status 400")
+    void renderImageFromDBByIdWhenWrongFormat() throws Exception {
+        //when
+        mockMvc.perform(get("/recipe/{id}/recipe_image", "BlaBla"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(view().name("400error"))
+                .andExpect(model().attributeExists("exception"));
+        //then
+        then(imageService).shouldHaveNoInteractions();
     }
 }
