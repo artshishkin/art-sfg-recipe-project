@@ -92,7 +92,8 @@ class RecipeControllerTest {
         //when
         mockMvc.perform(get("/recipe/{id}/show", ID))
                 .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andExpect(view().name("404error"));
+                .andExpect(view().name("404error"))
+                .andExpect(model().attributeExists("exception"));
         //then
         then(recipeService).should(times(1)).getById(eq(ID));
         then(recipeService).should(never()).getAllRecipes();
