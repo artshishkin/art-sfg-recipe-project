@@ -9,8 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.validation.Valid;
 
 @Slf4j
 @Controller
@@ -18,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView;
 @RequiredArgsConstructor
 public class RecipeController {
 
+    static final String RECIPE_RECIPEFORM_URL = "recipe/recipeform";
     private final RecipeService recipeService;
 
     @RequestMapping("{id}/show")
@@ -30,11 +35,20 @@ public class RecipeController {
     @RequestMapping("new")
     public String newRecipe(Model model) {
         model.addAttribute("recipe", new RecipeCommand());
-        return "recipe/recipeform";
+        return RECIPE_RECIPEFORM_URL;
     }
 
     @PostMapping
-    public String createOrUpdate(@ModelAttribute("recipe") RecipeCommand recipeCommand) {
+    public String createOrUpdate(@Valid @ModelAttribute("recipe") RecipeCommand recipeCommand, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            bindingResult
+                    .getAllErrors()
+                    .stream()
+                    .map(ObjectError::toString)
+                    .forEach(log::debug);
+
+            return RECIPE_RECIPEFORM_URL;
+        }
         RecipeCommand savedRecipeCommand = recipeService.saveRecipeCommand(recipeCommand);
         return "redirect:/recipe/" + savedRecipeCommand.getId() + "/show";
     }
@@ -43,7 +57,7 @@ public class RecipeController {
     public String updateRecipe(@PathVariable Long id, Model model) {
         RecipeCommand recipeCommand = recipeService.getCommandById(id);
         model.addAttribute("recipe", recipeCommand);
-        return "recipe/recipeform";
+        return RECIPE_RECIPEFORM_URL;
     }
 
     @GetMapping("{id}/delete")

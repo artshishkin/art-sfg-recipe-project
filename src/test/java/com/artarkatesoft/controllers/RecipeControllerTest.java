@@ -129,9 +129,8 @@ class RecipeControllerTest {
     @Test
     void testPostNewRecipeForm() throws Exception {
         //given
-
-
         given(recipeService.saveRecipeCommand(any(RecipeCommand.class))).willReturn(recipeCommand);
+
         //when
         mockMvc
                 .perform(
@@ -139,6 +138,7 @@ class RecipeControllerTest {
                                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                                 .param("description", DESCRIPTION)
                                 .param("cookTime", String.valueOf(COOK_TIME))
+                                .param("directions", "Directions Bla Bla")
                 )
                 .andExpect(
                         matchAll(
@@ -151,6 +151,25 @@ class RecipeControllerTest {
         RecipeCommand commandCaptorValue = recipeCommandCaptor.getValue();
         assertThat(commandCaptorValue.getDescription()).isEqualTo(DESCRIPTION);
         assertThat(commandCaptorValue.getCookTime()).isEqualTo(COOK_TIME);
+    }
+
+    @Test
+    void testPostNewRecipeFormValidationFail() throws Exception {
+        //when
+        mockMvc
+                .perform(
+                        post("/recipe")
+                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                .param("description", ";)")
+                )
+                .andExpect(
+                        matchAll(
+                                status().isOk(),
+                                view().name(RecipeController.RECIPE_RECIPEFORM_URL)
+                        )
+                );
+        //then
+        then(recipeService).shouldHaveNoInteractions();
     }
 
     @Test
