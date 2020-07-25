@@ -28,6 +28,7 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
+        if (recipeRepository.findAll().iterator().hasNext()) return;
         log.debug("Starting bootstrap data...");
         recipeRepository.save(createGuacamoleRecipe());
         recipeRepository.save(createChickenTacosRecipe());
