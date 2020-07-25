@@ -22,12 +22,16 @@ jobs: # a collection of steps
             - ~/.m2
           key: art-sfg-recipe-project-{{ checksum "pom.xml" }}
 
-      - run: mvn verify # run the actual tests
+      - run: mvn integration-test cobertura:cobertura # run the actual tests
 
-#      - store_test_results: # uploads the test metadata from the `target/surefire-reports` directory so that it can show up in the CircleCI dashboard.
-#          # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
-#          path: target/surefire-reports
-#
+      - store_test_results: # uploads the test metadata from the `target/surefire-reports` directory so that it can show up in the CircleCI dashboard.
+          # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+          path: target/surefire-reports
+
+      - run:
+          name: Send to CodeCov
+          command: bash <(curl -s https://codecov.io/bash)
+
 #      - store_artifacts: # store the uberjar as an artifact
 #          # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
 #          path: target/art-sfg-recipe-project-0.0.1-SNAPSHOT.jar
