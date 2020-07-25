@@ -1,6 +1,25 @@
+database_url: ${remote_url:localhost:3306}
+
 spring:
   datasource:
+    url: jdbc:mysql://${database_url}/art_dev
+    username: art_dev_user
+    password: pass123
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
+    hibernate:
+      ddl-auto: validate
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     show-sql: true
+
+#    properties:
+#      javax:
+#        persistence:
+#          schema-generation:
+#            create-source: metadata
+#            scripts:
+#              action: create
+#              create-target: art_database_create.sql
+
+
+#https://www.baeldung.com/spring-data-jpa-generate-db-schema

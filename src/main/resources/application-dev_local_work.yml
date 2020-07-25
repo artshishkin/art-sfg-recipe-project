@@ -1,9 +1,0 @@
-spring:
-  datasource:
-    username: art_dev_user
-    password: pass123
-  jpa:
-    hibernate:
-      ddl-auto: validate
-  profiles:
-    include: dev_local
