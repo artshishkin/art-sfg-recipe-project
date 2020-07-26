@@ -30,7 +30,7 @@ public class DataInitializerH2 implements ApplicationListener<ContextRefreshedEv
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        if (recipeRepository.findAll().iterator().hasNext()) return;
+        if (recipeRepository.count() != 0) return;
         log.debug("Starting bootstrap data...");
         recipeRepository.save(createGuacamoleRecipe());
         recipeRepository.save(createChickenTacosRecipe());

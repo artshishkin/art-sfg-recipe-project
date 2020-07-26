@@ -31,13 +31,13 @@ public class DataInitializerMySQL implements ApplicationListener<ContextRefreshe
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        if (!categoryRepository.findAll().iterator().hasNext())
+        if (categoryRepository.count() == 0)
             initCategories();
 
-        if (!unitOfMeasureRepository.findAll().iterator().hasNext())
+        if (unitOfMeasureRepository.count() == 0)
             initUnitsOfMeasure();
 
-        if (!recipeRepository.findAll().iterator().hasNext())
+        if (recipeRepository.count() == 0)
             initRecipes();
     }
 
@@ -53,7 +53,7 @@ public class DataInitializerMySQL implements ApplicationListener<ContextRefreshe
                 .forEach(unitOfMeasureRepository::save);
     }
 
-    private void initRecipes(){
+    private void initRecipes() {
         log.debug("Starting bootstrap data...");
         recipeRepository.save(createGuacamoleRecipe());
         recipeRepository.save(createChickenTacosRecipe());
