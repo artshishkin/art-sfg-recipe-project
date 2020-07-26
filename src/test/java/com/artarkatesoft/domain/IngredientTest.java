@@ -3,7 +3,7 @@ package com.artarkatesoft.domain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class IngredientTest {
 
@@ -16,7 +16,7 @@ class IngredientTest {
 
     @Test
     void getId() {
-        long id = 4L;
+        String id = "4L";
         ingredient.setId(id);
         assertEquals(id, ingredient.getId());
     }

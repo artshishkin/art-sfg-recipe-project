@@ -32,7 +32,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public Recipe getById(Long id) {
+    public Recipe getById(String id) {
         return recipeRepository.findById(id).orElseThrow(() -> new NotFoundException("Recipe with id " + id + " Not found"));
     }
 
@@ -44,12 +44,12 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public RecipeCommand getCommandById(Long id) {
+    public RecipeCommand getCommandById(String id) {
         return toRecipeCommandConverter.convert(getById(id));
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         recipeRepository.deleteById(id);
     }
 

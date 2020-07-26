@@ -16,7 +16,7 @@ class UnitOfMeasureToUnitOfMeasureCommandConverterTest {
     static void setUp() {
         converter = new UnitOfMeasureToUnitOfMeasureCommandConverter();
         uom = new UnitOfMeasure();
-        uom.setId(100L);
+        uom.setId("100L");
         uom.setDescription("Desc");
     }
 

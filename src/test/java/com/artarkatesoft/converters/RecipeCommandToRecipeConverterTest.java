@@ -26,7 +26,7 @@ class RecipeCommandToRecipeConverterTest {
 
         converter = new RecipeCommandToRecipeConverter(ingredientConverter, notesConverter, categoryConverter);
         recipeCommand = new RecipeCommand();
-        recipeCommand.setId(100L);
+        recipeCommand.setId("100L");
         recipeCommand.setDescription("Desc");
         recipeCommand.setCookTime(12);
         recipeCommand.setPrepTime(13);
@@ -36,35 +36,35 @@ class RecipeCommandToRecipeConverterTest {
 
         CategoryCommand category;
         category = new CategoryCommand();
-        category.setId(3L);
+        category.setId("3L");
         category.setDescription("CatDesc3");
         recipeCommand.getCategories().add(category);
         category = new CategoryCommand();
-        category.setId(4L);
+        category.setId("4L");
         category.setDescription("CatDesc4");
         recipeCommand.getCategories().add(category);
 
         IngredientCommand ingredientCommand;
         ingredientCommand = new IngredientCommand();
-        ingredientCommand.setId(8L);
+        ingredientCommand.setId("8L");
         ingredientCommand.setDescription("ddd");
         ingredientCommand.setAmount(BigDecimal.valueOf(123));
         UnitOfMeasureCommand uomCommand = new UnitOfMeasureCommand();
-        uomCommand.setId(1L);
+        uomCommand.setId("1L");
         uomCommand.setDescription("qwert");
         ingredientCommand.setUom(uomCommand);
         recipeCommand.getIngredients().add(ingredientCommand);
-        ingredientCommand.setId(7L);
+        ingredientCommand.setId("7L");
         ingredientCommand.setDescription("asd");
         ingredientCommand.setAmount(BigDecimal.valueOf(124));
         uomCommand = new UnitOfMeasureCommand();
-        uomCommand.setId(4L);
+        uomCommand.setId("4L");
         uomCommand.setDescription("erty");
         ingredientCommand.setUom(uomCommand);
         recipeCommand.getIngredients().add(ingredientCommand);
 
         NotesCommand notes = new NotesCommand();
-        notes.setId(1L);
+        notes.setId("1L");
         notes.setNotes("notesnotes");
         recipeCommand.setNotes(notes);
 

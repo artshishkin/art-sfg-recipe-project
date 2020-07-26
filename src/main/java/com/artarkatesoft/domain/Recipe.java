@@ -17,7 +17,7 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = {"notes", "ingredients", "categories"})
 public class Recipe {
 
-    private Long id;
+    private String id;
     private String description;
     private Integer prepTime;
     private Integer cookTime;

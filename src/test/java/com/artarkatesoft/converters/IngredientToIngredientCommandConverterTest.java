@@ -18,12 +18,12 @@ class IngredientToIngredientCommandConverterTest {
     static void setUp() {
         converter = new IngredientToIngredientCommandConverter(new UnitOfMeasureToUnitOfMeasureCommandConverter());
         ingredient = new Ingredient();
-        ingredient.setId(100L);
+        ingredient.setId("100L");
         ingredient.setDescription("Desc");
         ingredient.setAmount(BigDecimal.valueOf(123));
 
         UnitOfMeasure uom = new UnitOfMeasure();
-        uom.setId(2L);
+        uom.setId("2L");
         uom.setDescription("Litre");
         ingredient.setUom(uom);
     }

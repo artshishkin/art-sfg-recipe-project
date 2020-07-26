@@ -17,7 +17,7 @@ public class ImageServiceImpl implements ImageService {
 
     @SneakyThrows
     @Override
-    public void saveImageFile(Long recipeId, MultipartFile file) {
+    public void saveImageFile(String recipeId, MultipartFile file) {
         log.debug("Receive a file");
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RuntimeException("Recipe with id " + recipeId + " not found"));
@@ -26,7 +26,7 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public byte[] getImageByRecipeId(Long recipeId) {
+    public byte[] getImageByRecipeId(String recipeId) {
         Recipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RuntimeException("Recipe with id " + recipeId + "not found"));
         return recipe.getImage();

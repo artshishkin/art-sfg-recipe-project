@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UnitOfMeasure {
 
-    private Long id;
+    private String id;
     private String description;
 
     public UnitOfMeasure(String description) {

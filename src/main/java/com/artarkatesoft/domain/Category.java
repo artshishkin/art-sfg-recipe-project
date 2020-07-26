@@ -14,7 +14,7 @@ import java.util.Set;
 public class Category {
 
 
-    private Long id;
+    private String id;
     private String description;
 
 

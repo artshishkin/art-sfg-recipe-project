@@ -53,11 +53,12 @@ class IngredientServiceImplWithConverterTest {
         );
         ingredientService = new IngredientServiceImpl(recipeRepository,
                 uomRepository, toIngredientCommandConverter, toIngredientConverter);
-        Long recipeId = 1L;
+        String recipeId = "1";
 
         recipe = new Recipe();
         LongStream.rangeClosed(1, 5)
-                .mapToObj(this::createFakeIngredient)
+                .mapToObj(String::valueOf)
+                .map(this::createFakeIngredient)
                 .forEach(recipe::addIngredient);
         recipe.setId(recipeId);
 
@@ -66,16 +67,17 @@ class IngredientServiceImplWithConverterTest {
     @Test
     void findIngredientCommandByIdAndRecipeId() {
         //given
-        Long id = 2L;
-        Long recipeId = 1L;
+        String id = "2";
+        String recipeId = "1";
         Recipe recipe = new Recipe();
         recipe.setId(recipeId);
 
         LongStream.rangeClosed(1, 5)
-                .mapToObj(this::createFakeIngredient)
+                .mapToObj(String::valueOf)
+                .map(this::createFakeIngredient)
                 .forEach(recipe::addIngredient);
 
-        given(recipeRepository.findById(anyLong())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
         //when
         IngredientCommand ingredientCommand = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
         //then
@@ -85,7 +87,7 @@ class IngredientServiceImplWithConverterTest {
 
     }
 
-    private Ingredient createFakeIngredient(Long id) {
+    private Ingredient createFakeIngredient(String id) {
         Ingredient ingredient = new Ingredient();
         ingredient.setId(id);
         ingredient.setDescription("Desc" + id);
@@ -95,30 +97,30 @@ class IngredientServiceImplWithConverterTest {
     @Test
     public void saveIngredientCommand() {
         //given
-        Long recipeId = recipe.getId();
-        Long id = 2L;
+        String recipeId = recipe.getId();
+        String id = "2";
         Ingredient ingredientRepo = recipe.getIngredients()
                 .stream()
                 .filter(ingredient -> Objects.equals(ingredient.getId(), id))
                 .findAny().get();
         UnitOfMeasure uom = new UnitOfMeasure();
-        uom.setId(12L);
+        uom.setId("12L");
         uom.setDescription("BBottle");
 
         UnitOfMeasureCommand uomCommand = new UnitOfMeasureCommand();
-        uomCommand.setId(12L);
+        uomCommand.setId("12L");
         uomCommand.setDescription("BBottle");
 
         IngredientCommand commandToSave = new IngredientCommand(id, recipeId, "New Description", BigDecimal.valueOf(333), uomCommand);
 
-        given(recipeRepository.findById(anyLong())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
         given(recipeRepository.save(any(Recipe.class))).willReturn(recipe);
-        given(uomRepository.findById(anyLong())).willReturn(Optional.of(uom));
+        given(uomRepository.findById(anyString())).willReturn(Optional.of(uom));
         //when
         IngredientCommand savedCommand = ingredientService.saveIngredientCommand(commandToSave);
         //then
-        then(recipeRepository).should().findById(anyLong());
-        then(uomRepository).should().findById(anyLong());
+        then(recipeRepository).should().findById(anyString());
+        then(uomRepository).should().findById(anyString());
         then(recipeRepository).should().save(any(Recipe.class));
         assertAll(
                 () -> assertThat(savedCommand.getId()).isEqualTo(ingredientRepo.getId()),

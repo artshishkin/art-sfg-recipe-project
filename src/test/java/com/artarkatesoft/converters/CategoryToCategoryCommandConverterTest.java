@@ -15,7 +15,7 @@ class CategoryToCategoryCommandConverterTest {
     static void setUp() {
         converter = new CategoryToCategoryCommandConverter();
         category = new Category();
-        category.setId(100L);
+        category.setId("100L");
         category.setDescription("Desc");
     }
 

@@ -46,11 +46,12 @@ class IngredientServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        Long recipeId = 1L;
+        String recipeId = "1";
 
         recipe = new Recipe();
         LongStream.rangeClosed(1, 5)
-                .mapToObj(this::createFakeIngredient)
+                .mapToObj(String::valueOf)
+                .map(this::createFakeIngredient)
                 .forEach(recipe::addIngredient);
         recipe.setId(recipeId);
     }
@@ -58,10 +59,10 @@ class IngredientServiceImplTest {
     @Test
     void findIngredientCommandByIdAndRecipeId() {
         //given
-        Long id = 2L;
-        Long recipeId = recipe.getId();
+        String id = "2";
+        String recipeId = recipe.getId();
 
-        given(recipeRepository.findById(anyLong())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
         given(toIngredientCommandConverter.convert(any(Ingredient.class))).willReturn(new IngredientCommand());
         //when
         IngredientCommand ingredientCommand = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
@@ -72,12 +73,12 @@ class IngredientServiceImplTest {
 
     }
 
-    private Ingredient createFakeIngredient(Long id) {
+    private Ingredient createFakeIngredient(String id) {
         Ingredient ingredient = new Ingredient();
         ingredient.setId(id);
         ingredient.setDescription("Desc" + id);
         UnitOfMeasure uom = new UnitOfMeasure();
-        uom.setId(222L);
+        uom.setId("222");
         uom.setDescription("uom desc");
         ingredient.setUom(uom);
         return ingredient;
@@ -86,31 +87,31 @@ class IngredientServiceImplTest {
     @Test
     public void saveIngredientCommand() {
         //given
-        Long recipeId = recipe.getId();
-        Long id = 2L;
+        String recipeId = recipe.getId();
+        String id = "2";
         Ingredient ingredientRepo = recipe.getIngredients()
                 .stream()
                 .filter(ingredient -> Objects.equals(ingredient.getId(), id))
                 .findAny().get();
         UnitOfMeasure uom = new UnitOfMeasure();
-        uom.setId(12L);
+        uom.setId("12");
         uom.setDescription("BBottle");
 
         UnitOfMeasureCommand uomCommand = new UnitOfMeasureCommand();
-        uomCommand.setId(12L);
+        uomCommand.setId("12");
         uomCommand.setDescription("BBottle");
 
         IngredientCommand commandToSave = new IngredientCommand(id, recipeId, "New Description", BigDecimal.valueOf(333), uomCommand);
 
-        given(recipeRepository.findById(anyLong())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
         given(recipeRepository.save(any(Recipe.class))).willReturn(recipe);
-        given(uomRepository.findById(anyLong())).willReturn(Optional.of(uom));
+        given(uomRepository.findById(anyString())).willReturn(Optional.of(uom));
         given(toIngredientCommandConverter.convert(ingredientRepo)).willReturn(commandToSave);
         //when
         IngredientCommand savedCommand = ingredientService.saveIngredientCommand(commandToSave);
         //then
-        then(recipeRepository).should().findById(anyLong());
-        then(uomRepository).should().findById(anyLong());
+        then(recipeRepository).should().findById(anyString());
+        then(uomRepository).should().findById(anyString());
         then(recipeRepository).should().save(any(Recipe.class));
         then(toIngredientCommandConverter).should().convert(any());
 
@@ -119,9 +120,9 @@ class IngredientServiceImplTest {
     @Test
     void testDeleteByIdAndRecipeId() {
         //given
-        Long recipeId = recipe.getId();
-        Long ingredientId = recipe.getIngredients().iterator().next().getId();
-        given(recipeRepository.findById(anyLong())).willReturn(Optional.of(recipe));
+        String recipeId = recipe.getId();
+        String ingredientId = recipe.getIngredients().iterator().next().getId();
+        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
         //when
         ingredientService.deleteByIdAndRecipeId(ingredientId, recipeId);
         //then

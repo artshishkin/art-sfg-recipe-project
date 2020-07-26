@@ -40,10 +40,10 @@ class ImageServiceImplTest {
     void saveImageFileWhenRecipeFound() {
         //given
         MockMultipartFile multipartFile = new MockMultipartFile("imagefile", "testing.txtx", "text/plain", "ArtArKateSoft.com".getBytes());
-        Long recipeId = 1L;
+        String recipeId = "1L";
         Recipe recipe = new Recipe();
         recipe.setId(recipeId);
-        given(recipeRepository.findById(anyLong())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
         //when
         imageService.saveImageFile(recipeId, multipartFile);
         //then
@@ -59,8 +59,8 @@ class ImageServiceImplTest {
     void saveImageFileWhenRecipeNotFound() {
         //given
         MockMultipartFile multipartFile = new MockMultipartFile("imagefile", "testing.txtx", "text/plain", "ArtArKateSoft.com".getBytes());
-        Long recipeId = 1L;
-        given(recipeRepository.findById(anyLong())).willReturn(Optional.empty());
+        String recipeId = "1L";
+        given(recipeRepository.findById(anyString())).willReturn(Optional.empty());
         //when
         Executable storeImageExecutable = () -> imageService.saveImageFile(recipeId, multipartFile);
         //then
@@ -74,12 +74,12 @@ class ImageServiceImplTest {
     @Test
     void testGetImageByRecipeId() {
         //given
-        Long recipeId = 1L;
+        String recipeId = "1L";
         Recipe recipe = new Recipe();
         recipe.setId(recipeId);
         byte[] fakeImage = "This is fake image".getBytes();
         recipe.setImage(fakeImage);
-        given(recipeRepository.findById(anyLong())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
 
         //when
         byte[] retrievedImage = imageService.getImageByRecipeId(recipeId);

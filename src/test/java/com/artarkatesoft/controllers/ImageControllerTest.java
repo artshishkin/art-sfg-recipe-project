@@ -3,6 +3,7 @@ package com.artarkatesoft.controllers;
 import com.artarkatesoft.services.ImageService;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +18,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -48,7 +49,7 @@ class ImageControllerTest {
     @Test
     void testShowImageUploadForm() throws Exception {
         //given
-        Long recipeId = 1L;
+        String recipeId = "id123";
         //when
         mockMvc
                 .perform(get("/recipe/{id}/image", recipeId))
@@ -64,7 +65,7 @@ class ImageControllerTest {
     void handleImagePost() throws Exception {
         //given
         MockMultipartFile multipartFile = new MockMultipartFile("imagefile", "testing.txtx", "text/plain", "ArtArKateSoft.com".getBytes());
-        Long recipeId = 1L;
+        String recipeId = "1L";
         //when
         mockMvc
                 .perform(
@@ -78,9 +79,9 @@ class ImageControllerTest {
     @Test
     void renderImageFromDB() throws Exception {
         //given
-        Long recipeId = 1L;
+        String recipeId = "1L";
         byte[] imageBytes = "This is fake image".getBytes();
-        given(imageService.getImageByRecipeId(anyLong())).willReturn(imageBytes);
+        given(imageService.getImageByRecipeId(anyString())).willReturn(imageBytes);
 
         //when
         MvcResult mvcResult = mockMvc.perform(get("/recipe/{id}/recipe_image", recipeId))
@@ -95,6 +96,7 @@ class ImageControllerTest {
     }
 
     @Test
+    @Disabled("now conversion from String to Long is not required so no need to throw exception")
     @DisplayName("when get Image of Recipe by ID with wrong String value should return Status 400")
     void renderImageFromDBByIdWhenWrongFormat() throws Exception {
         //when

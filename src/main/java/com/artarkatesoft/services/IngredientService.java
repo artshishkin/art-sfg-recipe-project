@@ -3,9 +3,9 @@ package com.artarkatesoft.services;
 import com.artarkatesoft.commands.IngredientCommand;
 
 public interface IngredientService {
-    IngredientCommand findIngredientCommandByIdAndRecipeId(Long id, Long recipeId);
+    IngredientCommand findIngredientCommandByIdAndRecipeId(String id, String recipeId);
 
     IngredientCommand saveIngredientCommand(IngredientCommand ingredientCommand);
 
-    void deleteByIdAndRecipeId(Long id, Long recipeId);
+    void deleteByIdAndRecipeId(String id, String recipeId);
 }

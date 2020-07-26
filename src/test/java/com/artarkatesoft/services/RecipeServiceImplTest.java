@@ -46,12 +46,12 @@ class RecipeServiceImplTest {
         recipes = new HashSet<>();
         Recipe recipe;
         recipe = new Recipe();
-        recipe.setId(1L);
+        recipe.setId("1L");
         recipe.setDescription("Desc1");
         recipes.add(recipe);
 
         recipe = new Recipe();
-        recipe.setId(2L);
+        recipe.setId("2L");
         recipe.setDescription("Desc2");
         recipes.add(recipe);
 
@@ -72,9 +72,9 @@ class RecipeServiceImplTest {
     @Test
     void getById() {
         //given
-        Long id = 2L;
+        String id = "2L";
         Optional<Recipe> recipeOptional = recipes.stream().filter(rec -> id.equals(rec.getId())).findFirst();
-        given(recipeRepository.findById(anyLong())).willReturn(recipeOptional);
+        given(recipeRepository.findById(anyString())).willReturn(recipeOptional);
         //when
         Recipe foundRecipe = recipeService.getById(id);
         //then
@@ -88,8 +88,8 @@ class RecipeServiceImplTest {
     @DisplayName("when recipe with id does not exist then should throw NotFoundException")
     void getByIdWhenNotFound() {
         //given
-        Long id = 700L;
-        given(recipeRepository.findById(anyLong())).willReturn(Optional.empty());
+        String id = "700L";
+        given(recipeRepository.findById(anyString())).willReturn(Optional.empty());
         //when
         Executable findRecipeExecution = () -> recipeService.getById(id);
         //then
@@ -103,7 +103,7 @@ class RecipeServiceImplTest {
     void testGetRecipeCommandById() {
         //given
         Recipe recipe = recipes.iterator().next();
-        Long id = recipe.getId();
+        String id = recipe.getId();
         given(recipeRepository.findById(id)).willReturn(Optional.of(recipe));
         RecipeCommand recipeCommand = new RecipeCommand();
         BeanUtils.copyProperties(recipe, recipeCommand);
@@ -121,8 +121,8 @@ class RecipeServiceImplTest {
     @Test
     void testGetRecipeCommandByIdNotFound() {
         //given
-        long id = 123L;
-        given(recipeRepository.findById(anyLong())).willReturn(Optional.empty());
+        String id = "123L";
+        given(recipeRepository.findById(anyString())).willReturn(Optional.empty());
 
         //when
         Executable executable = () -> recipeService.getCommandById(id);
@@ -133,7 +133,7 @@ class RecipeServiceImplTest {
     @Test
     void testDeleteById() {
         //given
-        Long id = 1L;
+        String id = "1L";
         //when
         recipeService.deleteById(id);
         //then

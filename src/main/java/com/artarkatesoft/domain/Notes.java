@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 @Data
 public class Notes {
 
-    private Long id;
+    private String id;
 
 
     private String notes;
