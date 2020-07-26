@@ -12,4 +12,8 @@ Recipe Project for SFG Tutorial on Spring Boot
 - add ";" at the end of all lines and execute in workbench
 - `dev, db_remote` - we can set active profiles in IDE Run Configuration
 
+## `312` Refactor Database Initialization for MySQL
+- add default profile properties
+- `spring.datasource.platform=h2` - Platform to use in the DDL or DML scripts (such as schema-${platform}.sql or data-${platform}.sql).
+- rename `data.sql` to `data-h2.sql` to load data only on h2 platform
 

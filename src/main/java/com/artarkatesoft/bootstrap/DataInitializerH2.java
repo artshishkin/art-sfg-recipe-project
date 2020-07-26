@@ -7,6 +7,7 @@ import com.artarkatesoft.repositories.UnitOfMeasureRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,8 @@ import static java.math.BigDecimal.valueOf;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DataInitializer implements ApplicationListener<ContextRefreshedEvent> {
+@Profile("default")
+public class DataInitializerH2 implements ApplicationListener<ContextRefreshedEvent> {
 
     private final RecipeRepository recipeRepository;
     private final UnitOfMeasureRepository unitOfMeasureRepository;
