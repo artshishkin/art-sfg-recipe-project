@@ -5,67 +5,47 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-@Entity
+
 @Data
 @EqualsAndHashCode(exclude = {"notes", "ingredients", "categories"})
+@Document
 public class Recipe {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
     private String description;
     private Integer prepTime;
     private Integer cookTime;
     private Integer servings;
     private String source;
     private String url;
-    @Lob
     private String directions;
-
-    @Enumerated(EnumType.STRING)
     private Difficulty difficulty;
-
-    @Lob
     private byte[] image;
-
-    @OneToOne(cascade = CascadeType.ALL)
     private Notes notes;
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
     @Setter(AccessLevel.NONE)
     private Set<Ingredient> ingredients = new HashSet<>();
 
-    @ManyToMany
+
     @Setter(AccessLevel.NONE)
     private Set<Category> categories = new HashSet<>();
 
-    @CreationTimestamp
-    private LocalDateTime created;
+//    private LocalDateTime created;
 
-    @UpdateTimestamp
-    private LocalDateTime modified;
-
-    public void setNotes(Notes notes) {
-        if (this.notes == notes) return;
-        this.notes = notes;
-
-        if (notes != null)
-            notes.setRecipe(this);
-    }
+//    private LocalDateTime modified;
 
     public void addIngredient(Ingredient ingredient) {
         if (ingredient == null) return;
         ingredients.add(ingredient);
-        ingredient.setRecipe(this);
     }
 
     public Set<Ingredient> getIngredients() {
@@ -73,11 +53,10 @@ public class Recipe {
     }
 
     public void removeIngredient(Ingredient ingredient) {
-        ingredient.setRecipe(null);
         ingredients.remove(ingredient);
     }
 
-    public void removeIngredientById(Long ingredientId) {
+    public void removeIngredientById(String ingredientId) {
         ingredients.removeIf(ingredient -> Objects.equals(ingredient.getId(), ingredientId));
     }
 

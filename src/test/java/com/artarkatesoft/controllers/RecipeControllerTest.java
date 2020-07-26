@@ -5,6 +5,7 @@ import com.artarkatesoft.domain.Recipe;
 import com.artarkatesoft.exceptions.NotFoundException;
 import com.artarkatesoft.services.RecipeService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +45,7 @@ class RecipeControllerTest {
     @Captor
     ArgumentCaptor<RecipeCommand> recipeCommandCaptor;
 
-    private static final long ID = 2L;
+    private static final String ID = "2L";
     private static final String DESCRIPTION = "DDeessccrriippttiioonn";
     private static final int COOK_TIME = 12;
     private RecipeCommand recipeCommand;
@@ -71,7 +72,7 @@ class RecipeControllerTest {
         recipe.setId(ID);
         recipe.setDescription("Desc1");
 
-        given(recipeService.getById(anyLong())).willReturn(recipe);
+        given(recipeService.getById(anyString())).willReturn(recipe);
 
         //when
         mockMvc.perform(get("/recipe/{id}/show", ID))
@@ -90,7 +91,7 @@ class RecipeControllerTest {
     @DisplayName("when Recipe not found should return Status 404")
     void testShowRecipeByIdWhenNotFound() throws Exception {
         //given
-        given(recipeService.getById(anyLong())).willThrow(NotFoundException.class);
+        given(recipeService.getById(anyString())).willThrow(NotFoundException.class);
 
         //when
         mockMvc.perform(get("/recipe/{id}/show", ID))
@@ -105,6 +106,7 @@ class RecipeControllerTest {
 
     @Test
     @DisplayName("when get Recipe by ID with wrong String value should return Status 400")
+    @Disabled("now conversion from String to Long is not required so no need to throw exception")
     void testShowRecipeByIdWhenWrongFormat() throws Exception {
         //when
         mockMvc.perform(get("/recipe/{id}/show", "BlaBla"))

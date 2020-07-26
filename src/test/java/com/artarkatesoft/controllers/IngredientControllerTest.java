@@ -22,14 +22,14 @@ import org.springframework.util.MultiValueMap;
 
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -54,7 +54,7 @@ class IngredientControllerTest {
 
     MockMvc mockMvc;
     private RecipeCommand defaultRecipeCommand;
-    public static final Long RECIPE_ID = 1L;
+    public static final String RECIPE_ID = "1";
 
     @Captor
     ArgumentCaptor<IngredientCommand> commandCaptor;
@@ -66,13 +66,13 @@ class IngredientControllerTest {
         defaultRecipeCommand = new RecipeCommand();
         defaultRecipeCommand.setId(RECIPE_ID);
         UnitOfMeasureCommand uom = new UnitOfMeasureCommand();
-        uom.setId(1L);
+        uom.setId("1");
         uom.setDescription("UomDesc");
 
-        Set<IngredientCommand> ingredients = LongStream
+        List<IngredientCommand> ingredients = LongStream
                 .rangeClosed(1, 5)
-                .mapToObj(i -> new IngredientCommand(i, RECIPE_ID, "desc" + i, BigDecimal.valueOf(i), uom))
-                .collect(Collectors.toSet());
+                .mapToObj(i -> new IngredientCommand(String.valueOf(i), RECIPE_ID, "desc" + i, BigDecimal.valueOf(i), uom))
+                .collect(Collectors.toList());
 
         defaultRecipeCommand.setIngredients(ingredients);
     }
@@ -80,7 +80,7 @@ class IngredientControllerTest {
     @Test
     void testGetListOfIngredients() throws Exception {
         //given
-        given(recipeService.getCommandById(anyLong())).willReturn(defaultRecipeCommand);
+        given(recipeService.getCommandById(anyString())).willReturn(defaultRecipeCommand);
 
         //when
         mockMvc.perform(get("/recipe/{recipeId}/ingredients", RECIPE_ID))
@@ -97,7 +97,7 @@ class IngredientControllerTest {
     void testShowIngredient() throws Exception {
         //given
         IngredientCommand ingredientCommand = defaultRecipeCommand.getIngredients().iterator().next();
-        given(ingredientService.findIngredientCommandByIdAndRecipeId(anyLong(), anyLong()))
+        given(ingredientService.findIngredientCommandByIdAndRecipeId(anyString(), anyString()))
                 .willReturn(ingredientCommand);
 
         //when
@@ -107,14 +107,14 @@ class IngredientControllerTest {
                 .andExpect(model().attributeExists("ingredient"))
                 .andExpect(model().attribute("ingredient", notNullValue()));
         //then
-        then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq(2L), eq(1L));
+        then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq("2"), eq("1"));
     }
 
     @Test
     void testShowUpdateForm() throws Exception {
         //given
         IngredientCommand ingredientCommand = defaultRecipeCommand.getIngredients().iterator().next();
-        given(ingredientService.findIngredientCommandByIdAndRecipeId(anyLong(), anyLong()))
+        given(ingredientService.findIngredientCommandByIdAndRecipeId(anyString(), anyString()))
                 .willReturn(ingredientCommand);
         given(uomService.listAllUoms()).willReturn(Collections.emptyList());
         //when
@@ -126,14 +126,14 @@ class IngredientControllerTest {
                 .andExpect(model().attribute("ingredient", notNullValue(IngredientCommand.class)));
 
         //then
-        then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq(2L), eq(1L));
+        then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq("2"), eq("1"));
         then(uomService).should().listAllUoms();
     }
 
     @Test
     void testNewIngredientForm() throws Exception {
         //given
-        given(recipeService.getCommandById(anyLong()))
+        given(recipeService.getCommandById(anyString()))
                 .willReturn(defaultRecipeCommand);
         given(uomService.listAllUoms()).willReturn(Collections.emptyList());
         //when
@@ -182,8 +182,8 @@ class IngredientControllerTest {
     @Test
     public void testDeleteIngredient() throws Exception {
         //given
-        Long recipeId = 100L;
-        Long ingredientId = 123L;
+        String recipeId = "100";
+        String ingredientId = "123";
         //when
         mockMvc.perform(get("/recipe/{recipeId}/ingredients/{id}/delete", recipeId, ingredientId))
                 .andExpect(status().is3xxRedirection())

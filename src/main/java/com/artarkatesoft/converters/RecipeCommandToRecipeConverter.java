@@ -14,7 +14,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -31,7 +31,7 @@ public class RecipeCommandToRecipeConverter extends AbstractConverter<RecipeComm
         Recipe recipe = super.convert(recipeCommand);
         if (recipe == null) return null;
 
-        Set<IngredientCommand> ingredients = recipeCommand.getIngredients();
+        List<IngredientCommand> ingredients = recipeCommand.getIngredients();
         if (ingredients != null) {
             ingredients.stream()
                     .map(ingredientConverter::convert)
@@ -39,7 +39,7 @@ public class RecipeCommandToRecipeConverter extends AbstractConverter<RecipeComm
         }
         recipe.setNotes(notesConverter.convert(recipeCommand.getNotes()));
 
-        Set<CategoryCommand> categories = recipeCommand.getCategories();
+        List<CategoryCommand> categories = recipeCommand.getCategories();
         if (categories != null) {
             categories.stream()
                     .map(categoryConverter::convert)

@@ -25,7 +25,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DataInitializerMySQLTest {
+class DataInitializerTest {
 
     @Mock
     RecipeRepository recipeRepository;
@@ -37,7 +37,7 @@ class DataInitializerMySQLTest {
     ContextRefreshedEvent event;
 
     @InjectMocks
-    DataInitializerMySQL initializer;
+    DataInitializer initializer;
 
     @Test
     @DisplayName("when there is no categories then should bootstrap categories data")

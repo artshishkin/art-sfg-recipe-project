@@ -9,6 +9,7 @@ import com.artarkatesoft.domain.UnitOfMeasure;
 import com.artarkatesoft.repositories.RecipeRepository;
 import com.artarkatesoft.repositories.UnitOfMeasureRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.var;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -24,13 +25,15 @@ public class IngredientServiceImpl implements IngredientService {
     private final IngredientCommandToIngredientConverter toIngredientConverter;
 
     @Override
-    public IngredientCommand findIngredientCommandByIdAndRecipeId(Long id, Long recipeId) {
-        return findIngredientByIdAndRecipeId(id, recipeId)
+    public IngredientCommand findIngredientCommandByIdAndRecipeId(String id, String recipeId) {
+        IngredientCommand ingredientCommand = findIngredientByIdAndRecipeId(id, recipeId)
                 .map(toIngredientCommandConverter::convert)
                 .orElseThrow(() -> new RuntimeException("Ingredient not Found"));
+        ingredientCommand.setRecipeId(recipeId);
+        return ingredientCommand;
     }
 
-    private Optional<Ingredient> findIngredientByIdAndRecipeId(Long id, Long recipeId) {
+    private Optional<Ingredient> findIngredientByIdAndRecipeId(String id, String recipeId) {
         Recipe recipe = recipeRepository
                 .findById(recipeId)
                 .orElseThrow(() -> new RuntimeException("Recipe not found"));
@@ -43,7 +46,7 @@ public class IngredientServiceImpl implements IngredientService {
 
     @Override
     public IngredientCommand saveIngredientCommand(IngredientCommand command) {
-        Long recipeId = command.getRecipeId();
+        var recipeId = command.getRecipeId();
         Recipe recipeRepo = recipeRepository.findById(recipeId).orElseThrow(() -> new RuntimeException("Recipe with id " + recipeId + " not found"));
         Optional<Ingredient> ingredientOptional = recipeRepo.getIngredients()
                 .stream()
@@ -81,16 +84,21 @@ public class IngredientServiceImpl implements IngredientService {
                     .filter(recipeIngredient -> recipeIngredient.getUom().getId().equals(command.getUom().getId()))
                     .findAny();
         }
-        return toIngredientCommandConverter.convert(
+        IngredientCommand ingredientCommand = toIngredientCommandConverter.convert(
                 savedIngredientOptional.orElseThrow(() -> new RuntimeException("Ingredient not saved")));
+        if (ingredientCommand != null) {
+            ingredientCommand.setRecipeId(savedRecipe.getId());
+        }
+        return ingredientCommand;
     }
 
     @Override
-    public void deleteByIdAndRecipeId(Long id, Long recipeId) {
-        Ingredient ingredient = findIngredientByIdAndRecipeId(id, recipeId)
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
-        Recipe recipe = ingredient.getRecipe();
-        recipe.removeIngredient(ingredient);
+    public void deleteByIdAndRecipeId(String id, String recipeId) {
+
+        Recipe recipe = recipeRepository
+                .findById(recipeId)
+                .orElseThrow(() -> new RuntimeException("Recipe not found"));
+        recipe.removeIngredientById(id);
         recipeRepository.save(recipe);
     }
 }

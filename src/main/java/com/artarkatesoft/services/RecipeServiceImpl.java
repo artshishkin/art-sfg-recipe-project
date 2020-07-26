@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,24 +33,25 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public Recipe getById(Long id) {
+    public Recipe getById(String id) {
         return recipeRepository.findById(id).orElseThrow(() -> new NotFoundException("Recipe with id " + id + " Not found"));
     }
 
     @Override
     public RecipeCommand saveRecipeCommand(RecipeCommand recipeCommand) {
+        if (StringUtils.isEmpty(recipeCommand.getId())) recipeCommand.setId(null);
         Recipe detachedRecipe = toRecipeConverter.convert(recipeCommand);
         Recipe savedRecipe = recipeRepository.save(detachedRecipe);
         return toRecipeCommandConverter.convert(savedRecipe);
     }
 
     @Override
-    public RecipeCommand getCommandById(Long id) {
+    public RecipeCommand getCommandById(String id) {
         return toRecipeCommandConverter.convert(getById(id));
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         recipeRepository.deleteById(id);
     }
 

@@ -15,13 +15,13 @@ public class ImageController {
     private final ImageService imageService;
 
     @GetMapping("/recipe/{id}/image")
-    public String showImageUploadForm(@PathVariable("id") Long id, Model model) {
+    public String showImageUploadForm(@PathVariable("id") String id, Model model) {
         model.addAttribute("recipe_id", id);
         return "/recipe/image_upload_form";
     }
 
     @PostMapping("/recipe/{id}/image")
-    public String handleImageUploadForm(@PathVariable("id") Long id,
+    public String handleImageUploadForm(@PathVariable("id") String id,
                                         @RequestParam("imagefile") MultipartFile file) {
         imageService.saveImageFile(id, file);
         return "redirect:/recipe/" + id + "/show";
@@ -29,7 +29,7 @@ public class ImageController {
 
     @ResponseBody
     @GetMapping(value = "/recipe/{id}/recipe_image", produces = MediaType.IMAGE_JPEG_VALUE)
-    public byte[] getRecipeImage(@PathVariable("id") Long recipeId) {
+    public byte[] getRecipeImage(@PathVariable("id") String recipeId) {
         return imageService.getImageByRecipeId(recipeId);
     }
 

@@ -32,7 +32,8 @@ class UnitOfMeasureServiceImplTest {
     @BeforeAll
     static void globalSetUp() {
         repositoryUomList = LongStream.rangeClosed(1, 5)
-                .mapToObj(UnitOfMeasureServiceImplTest::createFakeUom)
+                .mapToObj(String::valueOf)
+                .map(UnitOfMeasureServiceImplTest::createFakeUom)
                 .collect(Collectors.toList());
     }
 
@@ -43,7 +44,7 @@ class UnitOfMeasureServiceImplTest {
 
     }
 
-    private static UnitOfMeasure createFakeUom(Long id) {
+    private static UnitOfMeasure createFakeUom(String id) {
         UnitOfMeasure unitOfMeasure = new UnitOfMeasure();
         unitOfMeasure.setId(id);
         unitOfMeasure.setDescription("Uom Description " + id);

@@ -15,7 +15,7 @@ class NotesCommandToNotesConverterTest {
     static void setUp() {
         converter = new NotesCommandToNotesConverter();
         notesCommand = new NotesCommand();
-        notesCommand.setId(100L);
+        notesCommand.setId("100L");
         notesCommand.setNotes("notes");
     }
 

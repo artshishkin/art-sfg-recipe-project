@@ -24,7 +24,7 @@ class RecipeToRecipeCommandConverterTest {
 
         converter = new RecipeToRecipeCommandConverter(ingredientConverter, notesConverter, categoryConverter);
         recipe = new Recipe();
-        recipe.setId(100L);
+        recipe.setId("100L");
         recipe.setDescription("Desc");
         recipe.setCookTime(12);
         recipe.setPrepTime(13);
@@ -34,35 +34,35 @@ class RecipeToRecipeCommandConverterTest {
 
         Category category;
         category = new Category();
-        category.setId(3L);
+        category.setId("3L");
         category.setDescription("CatDesc3");
         recipe.addCategory(category);
         category = new Category();
-        category.setId(4L);
+        category.setId("4L");
         category.setDescription("CatDesc4");
         recipe.addCategory(category);
 
         Ingredient ingredient;
         ingredient = new Ingredient();
-        ingredient.setId(8L);
+        ingredient.setId("8L");
         ingredient.setDescription("ddd");
         ingredient.setAmount(BigDecimal.valueOf(123));
         UnitOfMeasure uom = new UnitOfMeasure();
-        uom.setId(1L);
+        uom.setId("1L");
         uom.setDescription("qwert");
         ingredient.setUom(uom);
         recipe.addIngredient(ingredient);
-        ingredient.setId(7L);
+        ingredient.setId("7L");
         ingredient.setDescription("asd");
         ingredient.setAmount(BigDecimal.valueOf(124));
         uom = new UnitOfMeasure();
-        uom.setId(4L);
+        uom.setId("4L");
         uom.setDescription("erty");
         ingredient.setUom(uom);
         recipe.addIngredient(ingredient);
 
         Notes notes = new Notes();
-        notes.setId(1L);
+        notes.setId("1L");
         notes.setNotes("notesnotes");
         recipe.setNotes(notes);
     }

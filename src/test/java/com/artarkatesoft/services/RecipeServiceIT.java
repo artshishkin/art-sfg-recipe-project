@@ -9,13 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.transaction.Transactional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-//@DataJpaTest
+
 @SpringBootTest
+//@Disabled("not finished migration - will throw - java.lang.IllegalStateException: Failed to load ApplicationContext")
 class RecipeServiceIT {
 
     public static final String NEW_DESCRIPTION = "new description";
@@ -32,7 +31,6 @@ class RecipeServiceIT {
     @Autowired
     RecipeCommandToRecipeConverter recipeCommandToRecipeConverter;
 
-    @Transactional
     @Test
     void testSaveOfDescription() {
         //given
