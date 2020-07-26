@@ -6,7 +6,6 @@ import com.artarkatesoft.domain.UnitOfMeasure;
 import com.artarkatesoft.repositories.CategoryRepository;
 import com.artarkatesoft.repositories.RecipeRepository;
 import com.artarkatesoft.repositories.UnitOfMeasureRepository;
-import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,11 +43,11 @@ class DataInitializerMySQLTest {
     @DisplayName("when there is no categories then should bootstrap categories data")
     void bootstrapCategoriesData() {
         //given
-        given(recipeRepository.findAll()).willReturn(Lists.newArrayList(new Recipe()));
+        given(recipeRepository.count()).willReturn(1L);
         //when
         initializer.onApplicationEvent(event);
         //then
-        then(categoryRepository).should().findAll();
+        then(categoryRepository).should().count();
         then(categoryRepository)
                 .should(times(4))
                 .save(any(Category.class));
@@ -58,11 +57,11 @@ class DataInitializerMySQLTest {
     @DisplayName("when there is no Unit Of Measure then should bootstrap UOM data")
     void bootstrapUnitOfMeasureData() {
         //given
-        given(recipeRepository.findAll()).willReturn(Lists.newArrayList(new Recipe()));
+        given(recipeRepository.count()).willReturn(1L);
         //when
         initializer.onApplicationEvent(event);
         //then
-        then(unitOfMeasureRepository).should().findAll();
+        then(unitOfMeasureRepository).should().count();
         then(unitOfMeasureRepository)
                 .should(atLeast(6))
                 .save(any(UnitOfMeasure.class));
@@ -72,11 +71,11 @@ class DataInitializerMySQLTest {
     @DisplayName("when recipes present then should not bootstrap Recipes data")
     void whenRecipesPresent_shouldNotSave() {
         //given
-        given(recipeRepository.findAll()).willReturn(Lists.newArrayList(new Recipe()));
+        given(recipeRepository.count()).willReturn(1L);
         //when
         initializer.onApplicationEvent(event);
         //then
-        then(recipeRepository).should().findAll();
+        then(recipeRepository).should().count();
         then(recipeRepository).shouldHaveNoMoreInteractions();
     }
 
@@ -87,7 +86,7 @@ class DataInitializerMySQLTest {
         Executable initializerExecutable = () -> initializer.onApplicationEvent(event);
         //then
         assertThrows(RuntimeException.class, initializerExecutable);
-        then(recipeRepository).should().findAll();
+        then(recipeRepository).should().count();
         then(recipeRepository).shouldHaveNoMoreInteractions();
         then(unitOfMeasureRepository).should().findByDescription(anyString());
     }
@@ -101,7 +100,7 @@ class DataInitializerMySQLTest {
         //when
         initializer.onApplicationEvent(event);
         //then
-        then(recipeRepository).should().findAll();
+        then(recipeRepository).should().count();
         then(unitOfMeasureRepository).should(atLeastOnce()).findByDescription(anyString());
         then(categoryRepository).should(atLeastOnce()).findByDescription(anyString());
         then(recipeRepository).should(times(2)).save(any(Recipe.class));
