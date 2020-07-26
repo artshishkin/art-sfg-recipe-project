@@ -88,10 +88,11 @@ public class IngredientServiceImpl implements IngredientService {
 
     @Override
     public void deleteByIdAndRecipeId(String id, String recipeId) {
-        Ingredient ingredient = findIngredientByIdAndRecipeId(id, recipeId)
-                .orElseThrow(() -> new RuntimeException("Ingredient not found"));
-        Recipe recipe = ingredient.getRecipe();
-        recipe.removeIngredient(ingredient);
+
+        Recipe recipe = recipeRepository
+                .findById(recipeId)
+                .orElseThrow(() -> new RuntimeException("Recipe not found"));
+        recipe.removeIngredientById(id);
         recipeRepository.save(recipe);
     }
 }

@@ -1,29 +1,23 @@
 package com.artarkatesoft.domain;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import javax.persistence.OneToOne;
 import java.math.BigDecimal;
-
 
 @Data
 @NoArgsConstructor
 public class Ingredient {
 
+    @Id
     private String id;
 
     private String description;
     private BigDecimal amount;
 
-
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private Recipe recipe;
-
-    @OneToOne
+    @DBRef
     private UnitOfMeasure uom;
 
     public Ingredient(String description, BigDecimal amount, UnitOfMeasure uom) {
