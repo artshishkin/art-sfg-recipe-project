@@ -5,21 +5,20 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.OneToOne;
 import java.math.BigDecimal;
 
-@Entity
+
 @Data
 @NoArgsConstructor
 public class Ingredient {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
     private String description;
     private BigDecimal amount;
 
-    @ManyToOne
+
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Recipe recipe;

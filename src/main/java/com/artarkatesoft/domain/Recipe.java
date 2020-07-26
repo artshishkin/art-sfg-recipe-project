@@ -5,22 +5,18 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-@Entity
+
 @Data
 @EqualsAndHashCode(exclude = {"notes", "ingredients", "categories"})
 public class Recipe {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
     private String description;
     private Integer prepTime;
@@ -28,30 +24,30 @@ public class Recipe {
     private Integer servings;
     private String source;
     private String url;
-    @Lob
+
     private String directions;
 
-    @Enumerated(EnumType.STRING)
+
     private Difficulty difficulty;
 
-    @Lob
+
     private byte[] image;
 
-    @OneToOne(cascade = CascadeType.ALL)
+
     private Notes notes;
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+
     @Setter(AccessLevel.NONE)
     private Set<Ingredient> ingredients = new HashSet<>();
 
-    @ManyToMany
+
     @Setter(AccessLevel.NONE)
     private Set<Category> categories = new HashSet<>();
 
-    @CreationTimestamp
+
     private LocalDateTime created;
 
-    @UpdateTimestamp
+
     private LocalDateTime modified;
 
     public void setNotes(Notes notes) {
