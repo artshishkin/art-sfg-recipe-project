@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public RecipeCommand saveRecipeCommand(RecipeCommand recipeCommand) {
+        if (StringUtils.isEmpty(recipeCommand.getId())) recipeCommand.setId(null);
         Recipe detachedRecipe = toRecipeConverter.convert(recipeCommand);
         Recipe savedRecipe = recipeRepository.save(detachedRecipe);
         return toRecipeCommandConverter.convert(savedRecipe);

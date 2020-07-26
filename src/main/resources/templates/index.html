@@ -17,7 +17,10 @@
         <div class="col-md-10 col-md-offset-1">
             <div class="panel panel-primary">
                 <div class="panel-heading">
-                    <h1 class="panel-title" th:text="'Recipes Page'">Welcome to my Recipes</h1>
+                    <div class="col-md-10">
+                        <h1 class="panel-title" th:text="'Recipes Page'">Welcome to my Recipes</h1>
+                    </div>
+                        <a href="#" th:href="@{/recipe/new}" class="btn btn-default">New Recipe</a>
                 </div>
                 <div class="panel-body">
                     <div class="table-responsive" th:if="${not #lists.isEmpty(recipes)}">
