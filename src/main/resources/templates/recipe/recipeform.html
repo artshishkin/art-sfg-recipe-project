@@ -138,10 +138,10 @@
                     <div class="panel-primary">
                         <div class="panel-heading">
                             <div class="row">
-                                <div class="col-md-11">
+                                <div class="col-md-10">
                                     <h1 class="panel-title">Ingredients</h1>
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-md-2">
                                     <a class="btn btn-default" href="#" role="button">Edit</a>
                                 </div>
                             </div>
@@ -157,6 +157,17 @@
                                             1 Teaspoon of chocolate
                                         </li>
                                     </ul>
+                                    <div th:each="ingredient, ingIdx : ${recipe.ingredients}">
+                                        <input type="hidden" th:field="*{ingredients[__${ingIdx.index}__].id}"/>
+                                        <input type="hidden" th:field="*{ingredients[__${ingIdx.index}__].description}"/>
+                                        <input type="hidden" th:field="*{ingredients[__${ingIdx.index}__].amount}"/>
+                                        <input type="hidden" th:field="*{ingredients[__${ingIdx.index}__].uom.id}"/>
+                                    </div>
+                                    <div th:each="ingredient, catIdx : ${recipe.categories}">
+                                        <input type="hidden" th:field="*{categories[__${catIdx.index}__].id}"/>
+                                        <input type="hidden" th:field="*{categories[__${catIdx.index}__].description}"/>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>

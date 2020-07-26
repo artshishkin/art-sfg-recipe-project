@@ -54,6 +54,8 @@ class RecipeCommandToRecipeConverterTest {
         uomCommand.setDescription("qwert");
         ingredientCommand.setUom(uomCommand);
         recipeCommand.getIngredients().add(ingredientCommand);
+
+        ingredientCommand = new IngredientCommand();
         ingredientCommand.setId("7L");
         ingredientCommand.setDescription("asd");
         ingredientCommand.setAmount(BigDecimal.valueOf(124));

@@ -22,7 +22,7 @@ import org.springframework.util.MultiValueMap;
 
 import java.math.BigDecimal;
 import java.util.Collections;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -69,10 +69,10 @@ class IngredientControllerTest {
         uom.setId("1");
         uom.setDescription("UomDesc");
 
-        Set<IngredientCommand> ingredients = LongStream
+        List<IngredientCommand> ingredients = LongStream
                 .rangeClosed(1, 5)
                 .mapToObj(i -> new IngredientCommand(String.valueOf(i), RECIPE_ID, "desc" + i, BigDecimal.valueOf(i), uom))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
         defaultRecipeCommand.setIngredients(ingredients);
     }
