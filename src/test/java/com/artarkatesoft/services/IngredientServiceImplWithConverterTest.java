@@ -68,7 +68,7 @@ class IngredientServiceImplWithConverterTest {
     void findIngredientCommandByIdAndRecipeId() {
         //given
         String id = "2";
-        String recipeId = "1";
+        String recipeId = "100";
         Recipe recipe = new Recipe();
         recipe.setId(recipeId);
 

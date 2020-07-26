@@ -26,9 +26,11 @@ public class IngredientServiceImpl implements IngredientService {
 
     @Override
     public IngredientCommand findIngredientCommandByIdAndRecipeId(String id, String recipeId) {
-        return findIngredientByIdAndRecipeId(id, recipeId)
+        IngredientCommand ingredientCommand = findIngredientByIdAndRecipeId(id, recipeId)
                 .map(toIngredientCommandConverter::convert)
                 .orElseThrow(() -> new RuntimeException("Ingredient not Found"));
+        ingredientCommand.setRecipeId(recipeId);
+        return ingredientCommand;
     }
 
     private Optional<Ingredient> findIngredientByIdAndRecipeId(String id, String recipeId) {
@@ -82,8 +84,12 @@ public class IngredientServiceImpl implements IngredientService {
                     .filter(recipeIngredient -> recipeIngredient.getUom().getId().equals(command.getUom().getId()))
                     .findAny();
         }
-        return toIngredientCommandConverter.convert(
+        IngredientCommand ingredientCommand = toIngredientCommandConverter.convert(
                 savedIngredientOptional.orElseThrow(() -> new RuntimeException("Ingredient not saved")));
+        if (ingredientCommand != null) {
+            ingredientCommand.setRecipeId(savedRecipe.getId());
+        }
+        return ingredientCommand;
     }
 
     @Override
