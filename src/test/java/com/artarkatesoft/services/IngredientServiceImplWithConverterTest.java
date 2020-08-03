@@ -9,17 +9,17 @@ import com.artarkatesoft.converters.UnitOfMeasureToUnitOfMeasureCommandConverter
 import com.artarkatesoft.domain.Ingredient;
 import com.artarkatesoft.domain.Recipe;
 import com.artarkatesoft.domain.UnitOfMeasure;
-import com.artarkatesoft.repositories.RecipeRepository;
-import com.artarkatesoft.repositories.UnitOfMeasureRepository;
+import com.artarkatesoft.repositories.reactive.RecipeReactiveRepository;
+import com.artarkatesoft.repositories.reactive.UnitOfMeasureReactiveRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.LongStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,9 +34,9 @@ class IngredientServiceImplWithConverterTest {
     IngredientServiceImpl ingredientService;
 
     @Mock
-    RecipeRepository recipeRepository;
+    RecipeReactiveRepository recipeRepository;
     @Mock
-    UnitOfMeasureRepository uomRepository;
+    UnitOfMeasureReactiveRepository uomRepository;
 
     IngredientToIngredientCommandConverter toIngredientCommandConverter;
     IngredientCommandToIngredientConverter toIngredientConverter;
@@ -77,9 +77,9 @@ class IngredientServiceImplWithConverterTest {
                 .map(this::createFakeIngredient)
                 .forEach(recipe::addIngredient);
 
-        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Mono.just(recipe));
         //when
-        IngredientCommand ingredientCommand = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
+        IngredientCommand ingredientCommand = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId).block();
         //then
         then(recipeRepository).should().findById(eq(recipeId));
         assertThat(ingredientCommand.getId()).isEqualTo(id);
@@ -113,11 +113,11 @@ class IngredientServiceImplWithConverterTest {
 
         IngredientCommand commandToSave = new IngredientCommand(id, recipeId, "New Description", BigDecimal.valueOf(333), uomCommand);
 
-        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
-        given(recipeRepository.save(any(Recipe.class))).willReturn(recipe);
-        given(uomRepository.findById(anyString())).willReturn(Optional.of(uom));
+        given(recipeRepository.findById(anyString())).willReturn(Mono.just(recipe));
+        given(recipeRepository.save(any(Recipe.class))).willReturn(Mono.just(recipe));
+        given(uomRepository.findById(anyString())).willReturn(Mono.just(uom));
         //when
-        IngredientCommand savedCommand = ingredientService.saveIngredientCommand(commandToSave);
+        IngredientCommand savedCommand = ingredientService.saveIngredientCommand(commandToSave).block();
         //then
         then(recipeRepository).should().findById(anyString());
         then(uomRepository).should().findById(anyString());

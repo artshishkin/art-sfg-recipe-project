@@ -35,7 +35,7 @@ public class IngredientController {
     public String getIngredientByRecipeIdAndIngredientId(@PathVariable("recipeId") String recipeId,
                                                          @PathVariable("id") String id,
                                                          Model model) {
-        IngredientCommand ingredient = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
+        IngredientCommand ingredient = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId).block();
         model.addAttribute("ingredient", ingredient);
         return "recipe/ingredient/show";
     }
@@ -44,7 +44,7 @@ public class IngredientController {
     public String showUpdateForm(@PathVariable("recipeId") String recipeId,
                                  @PathVariable("id") String id,
                                  Model model) {
-        IngredientCommand command = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
+        IngredientCommand command = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId).block();
         model.addAttribute("ingredient", command);
         model.addAttribute("uomList", uomService.listAllUoms().collectList().block());
         return "recipe/ingredient/ingredient_form";
@@ -53,7 +53,7 @@ public class IngredientController {
     @GetMapping("{recipeId}/ingredients/{id}/delete")
     public String deleteIngredient(@PathVariable("recipeId") String recipeId,
                                    @PathVariable("id") String id) {
-        ingredientService.deleteByIdAndRecipeId(id, recipeId);
+        ingredientService.deleteByIdAndRecipeId(id, recipeId).block();
         return "redirect:/recipe/" + recipeId + "/ingredients";
     }
 
@@ -73,7 +73,7 @@ public class IngredientController {
     public String createOrUpdateIngredient(@ModelAttribute("ingredient") IngredientCommand ingredientCommand, @PathVariable("recipeId") String recipeId) {
         if (!Objects.equals(recipeId, ingredientCommand.getRecipeId()))
             throw new RuntimeException("ID of recipe does not match");
-        ingredientService.saveIngredientCommand(ingredientCommand);
+        ingredientService.saveIngredientCommand(ingredientCommand).log("createOrUpdateIngredient").block();
         return "redirect:/recipe/" + recipeId + "/ingredients";
 
     }

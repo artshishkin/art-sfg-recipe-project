@@ -1,11 +1,12 @@
 package com.artarkatesoft.services;
 
 import com.artarkatesoft.commands.IngredientCommand;
+import reactor.core.publisher.Mono;
 
 public interface IngredientService {
-    IngredientCommand findIngredientCommandByIdAndRecipeId(String id, String recipeId);
+    Mono<IngredientCommand> findIngredientCommandByIdAndRecipeId(String id, String recipeId);
 
-    IngredientCommand saveIngredientCommand(IngredientCommand ingredientCommand);
+    Mono<IngredientCommand> saveIngredientCommand(IngredientCommand ingredientCommand);
 
-    void deleteByIdAndRecipeId(String id, String recipeId);
+    Mono<Void> deleteByIdAndRecipeId(String id, String recipeId);
 }
