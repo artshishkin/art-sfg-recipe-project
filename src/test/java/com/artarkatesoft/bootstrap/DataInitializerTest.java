@@ -6,7 +6,12 @@ import com.artarkatesoft.domain.UnitOfMeasure;
 import com.artarkatesoft.repositories.CategoryRepository;
 import com.artarkatesoft.repositories.RecipeRepository;
 import com.artarkatesoft.repositories.UnitOfMeasureRepository;
+import com.artarkatesoft.repositories.reactive.CategoryReactiveRepository;
+import com.artarkatesoft.repositories.reactive.RecipeReactiveRepository;
+import com.artarkatesoft.repositories.reactive.UnitOfMeasureReactiveRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -14,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.event.ContextRefreshedEvent;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -35,48 +41,83 @@ class DataInitializerTest {
     CategoryRepository categoryRepository;
     @Mock
     ContextRefreshedEvent event;
+    @Mock
+    UnitOfMeasureReactiveRepository uomReactiveRepository;
+    @Mock
+    RecipeReactiveRepository recipeReactiveRepository;
+    @Mock
+    CategoryReactiveRepository categoryReactiveRepository;
 
     @InjectMocks
     DataInitializer initializer;
 
-    @Test
-    @DisplayName("when there is no categories then should bootstrap categories data")
-    void bootstrapCategoriesData() {
-        //given
-        given(recipeRepository.count()).willReturn(1L);
-        //when
-        initializer.onApplicationEvent(event);
-        //then
-        then(categoryRepository).should().count();
-        then(categoryRepository)
-                .should(times(4))
-                .save(any(Category.class));
-    }
+    @Nested
+    class WithReactiveInitialization{
+        @BeforeEach
+        void setUp() {
+            initializer.setCategoryReactiveRepository(categoryReactiveRepository);
+            initializer.setUomReactiveRepository(uomReactiveRepository);
+            initializer.setRecipeReactiveRepository(recipeReactiveRepository);
 
-    @Test
-    @DisplayName("when there is no Unit Of Measure then should bootstrap UOM data")
-    void bootstrapUnitOfMeasureData() {
-        //given
-        given(recipeRepository.count()).willReturn(1L);
-        //when
-        initializer.onApplicationEvent(event);
-        //then
-        then(unitOfMeasureRepository).should().count();
-        then(unitOfMeasureRepository)
-                .should(atLeast(6))
-                .save(any(UnitOfMeasure.class));
-    }
+            given(uomReactiveRepository.count()).willReturn(Mono.just(1L));
+            given(recipeReactiveRepository.count()).willReturn(Mono.just(1L));
+            given(categoryReactiveRepository.count()).willReturn(Mono.just(1L));
+        }
 
-    @Test
-    @DisplayName("when recipes present then should not bootstrap Recipes data")
-    void whenRecipesPresent_shouldNotSave() {
-        //given
-        given(recipeRepository.count()).willReturn(1L);
-        //when
-        initializer.onApplicationEvent(event);
-        //then
-        then(recipeRepository).should().count();
-        then(recipeRepository).shouldHaveNoMoreInteractions();
+        @Test
+        @DisplayName("when there is no categories then should bootstrap categories data")
+        void bootstrapCategoriesData() {
+            //given
+            given(recipeRepository.count()).willReturn(1L);
+            //when
+            initializer.onApplicationEvent(event);
+            //then
+            then(categoryRepository).should().count();
+            then(categoryRepository)
+                    .should(times(4))
+                    .save(any(Category.class));
+        }
+
+        @Test
+        @DisplayName("when there is no Unit Of Measure then should bootstrap UOM data")
+        void bootstrapUnitOfMeasureData() {
+            //given
+            given(recipeRepository.count()).willReturn(1L);
+            //when
+            initializer.onApplicationEvent(event);
+            //then
+            then(unitOfMeasureRepository).should().count();
+            then(unitOfMeasureRepository)
+                    .should(atLeast(6))
+                    .save(any(UnitOfMeasure.class));
+        }
+
+        @Test
+        @DisplayName("when recipes present then should not bootstrap Recipes data")
+        void whenRecipesPresent_shouldNotSave() {
+            //given
+            given(recipeRepository.count()).willReturn(1L);
+            //when
+            initializer.onApplicationEvent(event);
+            //then
+            then(recipeRepository).should().count();
+            then(recipeRepository).shouldHaveNoMoreInteractions();
+        }
+
+        @Test
+        @DisplayName("when no recipes present then should bootstrap data")
+        void whenNoRecipes_shouldBootstrap() {
+            //given
+            given(unitOfMeasureRepository.findByDescription(anyString())).willReturn(Optional.of(new UnitOfMeasure()));
+            given(categoryRepository.findByDescription(anyString())).willReturn(Optional.of(new Category()));
+            //when
+            initializer.onApplicationEvent(event);
+            //then
+            then(recipeRepository).should().count();
+            then(unitOfMeasureRepository).should(atLeastOnce()).findByDescription(anyString());
+            then(categoryRepository).should(atLeastOnce()).findByDescription(anyString());
+            then(recipeRepository).should(times(2)).save(any(Recipe.class));
+        }
     }
 
     @Test
@@ -89,20 +130,5 @@ class DataInitializerTest {
         then(recipeRepository).should().count();
         then(recipeRepository).shouldHaveNoMoreInteractions();
         then(unitOfMeasureRepository).should().findByDescription(anyString());
-    }
-
-    @Test
-    @DisplayName("when no recipes present then should bootstrap data")
-    void whenNoRecipes_shouldBootstrap() {
-        //given
-        given(unitOfMeasureRepository.findByDescription(anyString())).willReturn(Optional.of(new UnitOfMeasure()));
-        given(categoryRepository.findByDescription(anyString())).willReturn(Optional.of(new Category()));
-        //when
-        initializer.onApplicationEvent(event);
-        //then
-        then(recipeRepository).should().count();
-        then(unitOfMeasureRepository).should(atLeastOnce()).findByDescription(anyString());
-        then(categoryRepository).should(atLeastOnce()).findByDescription(anyString());
-        then(recipeRepository).should(times(2)).save(any(Recipe.class));
     }
 }
