@@ -4,8 +4,10 @@ import com.artarkatesoft.domain.*;
 import com.artarkatesoft.repositories.CategoryRepository;
 import com.artarkatesoft.repositories.RecipeRepository;
 import com.artarkatesoft.repositories.UnitOfMeasureRepository;
+import com.artarkatesoft.repositories.reactive.UnitOfMeasureReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,9 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
     private final UnitOfMeasureRepository unitOfMeasureRepository;
     private final CategoryRepository categoryRepository;
 
+    @Autowired
+    private UnitOfMeasureReactiveRepository uomReactiveRepository;
+
     private final Supplier<RuntimeException> expectedCategoryNotFound = () -> new RuntimeException("Expected Category not found");
     private final Supplier<RuntimeException> expectedUomNotFound = () -> new RuntimeException("Expected UOM not found");
 
@@ -37,6 +42,9 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
         if (recipeRepository.count() == 0)
             initRecipes();
+
+        uomReactiveRepository.count()
+                .subscribe(count -> log.debug("UOM count from reactive repository: {}", count));
     }
 
     private void initCategories() {
