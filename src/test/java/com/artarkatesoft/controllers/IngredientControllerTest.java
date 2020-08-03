@@ -9,16 +9,14 @@ import com.artarkatesoft.services.UnitOfMeasureService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,7 +24,8 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.isA;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -97,14 +96,15 @@ class IngredientControllerTest {
         //given
         IngredientCommand ingredientCommand = defaultRecipeCommand.getIngredients().iterator().next();
         given(ingredientService.findIngredientCommandByIdAndRecipeId(anyString(), anyString()))
-                .willReturn(ingredientCommand);
+                .willReturn(Mono.just(ingredientCommand));
 
         //when
         mockMvc.perform(get("/recipe/1/ingredients/2/show"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("recipe/ingredient/show"))
                 .andExpect(model().attributeExists("ingredient"))
-                .andExpect(model().attribute("ingredient", notNullValue()));
+                .andExpect(model().attribute("ingredient", notNullValue()))
+                .andExpect(model().attribute("ingredient", isA(IngredientCommand.class)));
         //then
         then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq("2"), eq("1"));
     }
@@ -114,7 +114,7 @@ class IngredientControllerTest {
         //given
         IngredientCommand ingredientCommand = defaultRecipeCommand.getIngredients().iterator().next();
         given(ingredientService.findIngredientCommandByIdAndRecipeId(anyString(), anyString()))
-                .willReturn(ingredientCommand);
+                .willReturn(Mono.just(ingredientCommand));
         given(uomService.listAllUoms()).willReturn(Flux.empty());
         //when
         mockMvc.perform(get("/recipe/1/ingredients/2/update"))
@@ -122,8 +122,9 @@ class IngredientControllerTest {
                 .andExpect(view().name("recipe/ingredient/ingredient_form"))
                 .andExpect(model().attributeExists("ingredient", "uomList"))
                 .andExpect(model().attribute("uomList", notNullValue(Iterable.class)))
-                .andExpect(model().attribute("uomList", instanceOf(Iterable.class)))
-                .andExpect(model().attribute("ingredient", notNullValue(IngredientCommand.class)));
+                .andExpect(model().attribute("uomList", isA(Iterable.class)))
+                .andExpect(model().attribute("ingredient", notNullValue(IngredientCommand.class)))
+                .andExpect(model().attribute("ingredient", isA(IngredientCommand.class)));
 
         //then
         then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq("2"), eq("1"));
@@ -142,8 +143,9 @@ class IngredientControllerTest {
                 .andExpect(view().name("recipe/ingredient/ingredient_form"))
                 .andExpect(model().attributeExists("ingredient", "uomList"))
                 .andExpect(model().attribute("uomList", notNullValue()))
-                .andExpect(model().attribute("uomList", instanceOf(Iterable.class)))
-                .andExpect(model().attribute("ingredient", notNullValue(IngredientCommand.class)));
+                .andExpect(model().attribute("uomList", isA(Iterable.class)))
+                .andExpect(model().attribute("ingredient", notNullValue(IngredientCommand.class)))
+                .andExpect(model().attribute("ingredient", isA(IngredientCommand.class)));
 
         //then
         then(recipeService).should().getCommandById(eq(RECIPE_ID));
@@ -161,6 +163,7 @@ class IngredientControllerTest {
         commandParams.add("description", someCommand.getDescription());
         commandParams.add("uom.id", someCommand.getUom().getId().toString());
 
+        given(ingredientService.saveIngredientCommand(ArgumentMatchers.any(IngredientCommand.class))).willReturn(Mono.just(someCommand));
         //when
         mockMvc.perform(
                 post("/recipe/{recipeId}/ingredients", RECIPE_ID)
@@ -185,6 +188,7 @@ class IngredientControllerTest {
         //given
         String recipeId = "100";
         String ingredientId = "123";
+        given(ingredientService.deleteByIdAndRecipeId(anyString(),anyString())).willReturn(Mono.empty());
         //when
         mockMvc.perform(get("/recipe/{recipeId}/ingredients/{id}/delete", recipeId, ingredientId))
                 .andExpect(status().is3xxRedirection())

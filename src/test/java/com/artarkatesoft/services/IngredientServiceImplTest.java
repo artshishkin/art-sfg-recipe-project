@@ -2,12 +2,13 @@ package com.artarkatesoft.services;
 
 import com.artarkatesoft.commands.IngredientCommand;
 import com.artarkatesoft.commands.UnitOfMeasureCommand;
+import com.artarkatesoft.converters.IngredientCommandToIngredientConverter;
 import com.artarkatesoft.converters.IngredientToIngredientCommandConverter;
 import com.artarkatesoft.domain.Ingredient;
 import com.artarkatesoft.domain.Recipe;
 import com.artarkatesoft.domain.UnitOfMeasure;
-import com.artarkatesoft.repositories.RecipeRepository;
-import com.artarkatesoft.repositories.UnitOfMeasureRepository;
+import com.artarkatesoft.repositories.reactive.RecipeReactiveRepository;
+import com.artarkatesoft.repositories.reactive.UnitOfMeasureReactiveRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,10 +17,11 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.LongStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,11 +37,15 @@ class IngredientServiceImplTest {
     IngredientServiceImpl ingredientService;
 
     @Mock
-    RecipeRepository recipeRepository;
+    RecipeReactiveRepository recipeRepository;
     @Mock
-    UnitOfMeasureRepository uomRepository;
+    UnitOfMeasureReactiveRepository uomRepository;
     @Mock
     IngredientToIngredientCommandConverter toIngredientCommandConverter;
+    @Mock
+    IngredientCommandToIngredientConverter toIngredientConverter;
+
+
     @Captor
     ArgumentCaptor<Ingredient> ingredientCaptor;
     private Recipe recipe;
@@ -62,10 +68,10 @@ class IngredientServiceImplTest {
         String id = "2";
         String recipeId = recipe.getId();
 
-        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Mono.just(recipe));
         given(toIngredientCommandConverter.convert(any(Ingredient.class))).willReturn(new IngredientCommand());
         //when
-        IngredientCommand ingredientCommand = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
+        IngredientCommand ingredientCommand = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId).block();
         //then
         then(recipeRepository).should().findById(eq(recipe.getId()));
         then(toIngredientCommandConverter).should(times(1)).convert(ingredientCaptor.capture());
@@ -103,12 +109,13 @@ class IngredientServiceImplTest {
 
         IngredientCommand commandToSave = new IngredientCommand(id, recipeId, "New Description", BigDecimal.valueOf(333), uomCommand);
 
-        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
-        given(recipeRepository.save(any(Recipe.class))).willReturn(recipe);
-        given(uomRepository.findById(anyString())).willReturn(Optional.of(uom));
+        given(recipeRepository.findById(anyString())).willReturn(Mono.just(recipe));
+        given(recipeRepository.save(any(Recipe.class))).willReturn(Mono.just(recipe));
+        given(uomRepository.findById(anyString())).willReturn(Mono.just(uom));
         given(toIngredientCommandConverter.convert(ingredientRepo)).willReturn(commandToSave);
+        given(toIngredientConverter.convert(any())).willReturn(ingredientRepo);
         //when
-        IngredientCommand savedCommand = ingredientService.saveIngredientCommand(commandToSave);
+        IngredientCommand savedCommand = ingredientService.saveIngredientCommand(commandToSave).block();
         //then
         then(recipeRepository).should().findById(anyString());
         then(uomRepository).should().findById(anyString());
@@ -122,10 +129,14 @@ class IngredientServiceImplTest {
         //given
         String recipeId = recipe.getId();
         String ingredientId = recipe.getIngredients().iterator().next().getId();
-        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Mono.just(recipe));
+        given(recipeRepository.save(any(Recipe.class))).willReturn(Mono.just(recipe));
         //when
-        ingredientService.deleteByIdAndRecipeId(ingredientId, recipeId);
+        Mono<Void> voidMono = ingredientService.deleteByIdAndRecipeId(ingredientId, recipeId);
         //then
+        StepVerifier.create(voidMono)
+                .expectSubscription()
+                .verifyComplete();
         then(recipeRepository).should().findById(eq(recipeId));
         then(recipeRepository).should().save(any(Recipe.class));
     }
