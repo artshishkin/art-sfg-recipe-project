@@ -8,6 +8,7 @@ import com.artarkatesoft.repositories.reactive.CategoryReactiveRepository;
 import com.artarkatesoft.repositories.reactive.RecipeReactiveRepository;
 import com.artarkatesoft.repositories.reactive.UnitOfMeasureReactiveRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -29,10 +30,13 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
     private final CategoryRepository categoryRepository;
 
     @Autowired
+    @Setter
     private UnitOfMeasureReactiveRepository uomReactiveRepository;
     @Autowired
+    @Setter
     private RecipeReactiveRepository recipeReactiveRepository;
     @Autowired
+    @Setter
     private CategoryReactiveRepository categoryReactiveRepository;
 
     private final Supplier<RuntimeException> expectedCategoryNotFound = () -> new RuntimeException("Expected Category not found");
