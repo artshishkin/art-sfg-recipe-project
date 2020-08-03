@@ -90,49 +90,6 @@ public class IngredientServiceImpl implements IngredientService {
 
         return savedIngredientMono.map(toIngredientCommandConverter::convert)
                 .doOnNext(ingredientCommand -> ingredientCommand.setRecipeId(recipeId));
-
-//        Ingredient ingredientOld;
-//        ingredientMono.map(
-//                ingredient -> {
-//                    ingredient.setDescription(command.getDescription());
-//                    ingredient.setAmount(command.getAmount());
-//                    ingredient.setUom(uom);
-//                    return ingredient;
-//                }
-//        );
-//        if (ingredientOptional.isPresent()) {
-//            ingredientOld = ingredientOptional.get();
-//            ingredientOld.setDescription(command.getDescription());
-//            ingredientOld.setAmount(command.getAmount());
-//
-//            ingredientOld.setUom(uom);
-//
-//        } else {
-//            ingredientOld = toIngredientConverter.convert(command);
-//            ingredientOld.setUom(uom);
-//            recipeRepo.addIngredient(ingredientOld);
-//        }
-//        Recipe savedRecipe = recipeRepository.save(recipeRepo);
-//
-//
-//        Optional<Ingredient> savedIngredientOptional = savedRecipe.getIngredients()
-//                .stream()
-//                .filter(ingr -> Objects.equals(ingr.getId(), ingredientOld.getId()))
-//                .findAny();
-//
-//        if (!savedIngredientOptional.isPresent()) {
-//            savedIngredientOptional = savedRecipe.getIngredients().stream()
-//                    .filter(recipeIngredient -> recipeIngredient.getDescription().equals(command.getDescription()))
-//                    .filter(recipeIngredient -> recipeIngredient.getAmount().equals(command.getAmount()))
-//                    .filter(recipeIngredient -> recipeIngredient.getUom().getId().equals(command.getUom().getId()))
-//                    .findAny();
-//        }
-//        IngredientCommand ingredientCommand = toIngredientCommandConverter.convert(
-//                savedIngredientOptional.orElseThrow(() -> new RuntimeException("Ingredient not saved")));
-//        if (ingredientCommand != null) {
-//            ingredientCommand.setRecipeId(savedRecipe.getId());
-//        }
-//        return ingredientCommand;
     }
 
     @Override
