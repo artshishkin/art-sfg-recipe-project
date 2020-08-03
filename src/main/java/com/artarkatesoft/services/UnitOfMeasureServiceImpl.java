@@ -2,26 +2,21 @@ package com.artarkatesoft.services;
 
 import com.artarkatesoft.commands.UnitOfMeasureCommand;
 import com.artarkatesoft.converters.UnitOfMeasureToUnitOfMeasureCommandConverter;
-import com.artarkatesoft.repositories.UnitOfMeasureRepository;
+import com.artarkatesoft.repositories.reactive.UnitOfMeasureReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import reactor.core.publisher.Flux;
 
 @Component
 @RequiredArgsConstructor
 public class UnitOfMeasureServiceImpl implements UnitOfMeasureService {
 
-    private final UnitOfMeasureRepository unitOfMeasureRepository;
+    private final UnitOfMeasureReactiveRepository uomReactiveRepository;
     private final UnitOfMeasureToUnitOfMeasureCommandConverter converter;
 
     @Override
-    public List<UnitOfMeasureCommand> listAllUoms() {
-        return StreamSupport
-                .stream(unitOfMeasureRepository.findAll().spliterator(), false)
-                .map(converter::convert)
-                .collect(Collectors.toList());
+    public Flux<UnitOfMeasureCommand> listAllUoms() {
+        return uomReactiveRepository.findAll()
+                .map(converter::convert);
     }
 }

@@ -46,7 +46,7 @@ public class IngredientController {
                                  Model model) {
         IngredientCommand command = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
         model.addAttribute("ingredient", command);
-        model.addAttribute("uomList", uomService.listAllUoms());
+        model.addAttribute("uomList", uomService.listAllUoms().collectList().block());
         return "recipe/ingredient/ingredient_form";
     }
 
@@ -65,7 +65,7 @@ public class IngredientController {
         IngredientCommand ingredientCommand = new IngredientCommand();
         ingredientCommand.setRecipeId(recipeId);
         model.addAttribute("ingredient", ingredientCommand);
-        model.addAttribute("uomList", uomService.listAllUoms());
+        model.addAttribute("uomList", uomService.listAllUoms().collectList().block());
         return "recipe/ingredient/ingredient_form";
     }
 
