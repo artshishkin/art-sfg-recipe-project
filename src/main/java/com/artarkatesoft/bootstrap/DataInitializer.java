@@ -4,6 +4,8 @@ import com.artarkatesoft.domain.*;
 import com.artarkatesoft.repositories.CategoryRepository;
 import com.artarkatesoft.repositories.RecipeRepository;
 import com.artarkatesoft.repositories.UnitOfMeasureRepository;
+import com.artarkatesoft.repositories.reactive.CategoryReactiveRepository;
+import com.artarkatesoft.repositories.reactive.RecipeReactiveRepository;
 import com.artarkatesoft.repositories.reactive.UnitOfMeasureReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,10 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
     @Autowired
     private UnitOfMeasureReactiveRepository uomReactiveRepository;
+    @Autowired
+    private RecipeReactiveRepository recipeReactiveRepository;
+    @Autowired
+    private CategoryReactiveRepository categoryReactiveRepository;
 
     private final Supplier<RuntimeException> expectedCategoryNotFound = () -> new RuntimeException("Expected Category not found");
     private final Supplier<RuntimeException> expectedUomNotFound = () -> new RuntimeException("Expected UOM not found");
@@ -45,6 +51,10 @@ public class DataInitializer implements ApplicationListener<ContextRefreshedEven
 
         uomReactiveRepository.count()
                 .subscribe(count -> log.debug("UOM count from reactive repository: {}", count));
+        recipeReactiveRepository.count()
+                .subscribe(count -> log.debug("Recipes count from reactive repository: {}", count));
+        categoryReactiveRepository.count()
+                .subscribe(count -> log.debug("Categories count from reactive repository: {}", count));
     }
 
     private void initCategories() {
