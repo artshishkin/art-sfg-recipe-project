@@ -6,7 +6,6 @@ import com.artarkatesoft.commands.UnitOfMeasureCommand;
 import com.artarkatesoft.services.IngredientService;
 import com.artarkatesoft.services.RecipeService;
 import com.artarkatesoft.services.UnitOfMeasureService;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,15 +18,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import reactor.core.publisher.Flux;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -87,7 +86,7 @@ class IngredientControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("recipe"))
                 .andExpect(model().attribute("recipe", notNullValue()))
-                .andExpect(model().attribute("recipe", CoreMatchers.isA(RecipeCommand.class)))
+                .andExpect(model().attribute("recipe", isA(RecipeCommand.class)))
                 .andExpect(view().name("recipe/ingredient/list"));
         //then
         then(recipeService).should(times(1)).getCommandById(eq(RECIPE_ID));
@@ -116,13 +115,14 @@ class IngredientControllerTest {
         IngredientCommand ingredientCommand = defaultRecipeCommand.getIngredients().iterator().next();
         given(ingredientService.findIngredientCommandByIdAndRecipeId(anyString(), anyString()))
                 .willReturn(ingredientCommand);
-        given(uomService.listAllUoms()).willReturn(Collections.emptyList());
+        given(uomService.listAllUoms()).willReturn(Flux.empty());
         //when
         mockMvc.perform(get("/recipe/1/ingredients/2/update"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("recipe/ingredient/ingredient_form"))
                 .andExpect(model().attributeExists("ingredient", "uomList"))
-                .andExpect(model().attribute("uomList", notNullValue()))
+                .andExpect(model().attribute("uomList", notNullValue(Iterable.class)))
+                .andExpect(model().attribute("uomList", instanceOf(Iterable.class)))
                 .andExpect(model().attribute("ingredient", notNullValue(IngredientCommand.class)));
 
         //then
@@ -135,13 +135,14 @@ class IngredientControllerTest {
         //given
         given(recipeService.getCommandById(anyString()))
                 .willReturn(defaultRecipeCommand);
-        given(uomService.listAllUoms()).willReturn(Collections.emptyList());
+        given(uomService.listAllUoms()).willReturn(Flux.empty());
         //when
         mockMvc.perform(get("/recipe/{recipeId}/ingredients/new", RECIPE_ID))
                 .andExpect(status().isOk())
                 .andExpect(view().name("recipe/ingredient/ingredient_form"))
                 .andExpect(model().attributeExists("ingredient", "uomList"))
                 .andExpect(model().attribute("uomList", notNullValue()))
+                .andExpect(model().attribute("uomList", instanceOf(Iterable.class)))
                 .andExpect(model().attribute("ingredient", notNullValue(IngredientCommand.class)));
 
         //then

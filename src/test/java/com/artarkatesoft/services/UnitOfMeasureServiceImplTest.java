@@ -3,13 +3,14 @@ package com.artarkatesoft.services;
 import com.artarkatesoft.commands.UnitOfMeasureCommand;
 import com.artarkatesoft.converters.UnitOfMeasureToUnitOfMeasureCommandConverter;
 import com.artarkatesoft.domain.UnitOfMeasure;
-import com.artarkatesoft.repositories.UnitOfMeasureRepository;
+import com.artarkatesoft.repositories.reactive.UnitOfMeasureReactiveRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.times;
 class UnitOfMeasureServiceImplTest {
 
     @Mock
-    UnitOfMeasureRepository repository;
+    UnitOfMeasureReactiveRepository repository;
 
     private UnitOfMeasureService uomService;
     private static List<UnitOfMeasure> repositoryUomList;
@@ -54,10 +55,10 @@ class UnitOfMeasureServiceImplTest {
     @Test
     void listAllUoms() {
         //given
-        given(repository.findAll()).willReturn(repositoryUomList);
+        given(repository.findAll()).willReturn(Flux.fromIterable(repositoryUomList));
 
         //when
-        List<UnitOfMeasureCommand> uomList = uomService.listAllUoms();
+        List<UnitOfMeasureCommand> uomList = uomService.listAllUoms().collectList().block();
 
         //then
         then(repository).should(times(1)).findAll();
