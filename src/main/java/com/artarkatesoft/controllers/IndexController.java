@@ -7,9 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.Set;
-import java.util.stream.Collectors;
+import reactor.core.publisher.Flux;
 
 @Controller
 @RequiredArgsConstructor
@@ -18,10 +16,10 @@ public class IndexController {
 
     private final RecipeService recipeService;
 
-    @RequestMapping({"/", "index"})
+    @RequestMapping({"", "/", "index", "home"})
     public String index(Model model) {
-        Set<Recipe> allRecipes = recipeService.getAllRecipes().collect(Collectors.toSet()).block();
-        log.debug("Enter in index method of IndexController. AllRecipes' size is {}", allRecipes.size());
+        log.debug("in index controller");
+        Flux<Recipe> allRecipes = recipeService.getAllRecipes();
         model.addAttribute("recipes", allRecipes);
         return "index";
     }
