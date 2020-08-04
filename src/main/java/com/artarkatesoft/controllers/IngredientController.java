@@ -2,6 +2,7 @@ package com.artarkatesoft.controllers;
 
 import com.artarkatesoft.commands.IngredientCommand;
 import com.artarkatesoft.commands.RecipeCommand;
+import com.artarkatesoft.commands.UnitOfMeasureCommand;
 import com.artarkatesoft.services.IngredientService;
 import com.artarkatesoft.services.RecipeService;
 import com.artarkatesoft.services.UnitOfMeasureService;
@@ -13,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
@@ -57,7 +59,6 @@ public class IngredientController {
                                  Model model) {
         Mono<IngredientCommand> command = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
         model.addAttribute("ingredient", command);
-        model.addAttribute("uomList", uomService.listAllUoms());
         return RECIPE_INGREDIENT_FORM;
     }
 
@@ -76,7 +77,6 @@ public class IngredientController {
         IngredientCommand ingredientCommand = new IngredientCommand();
         ingredientCommand.setRecipeId(recipeId);
         model.addAttribute("ingredient", ingredientCommand);
-        model.addAttribute("uomList", uomService.listAllUoms());
         return RECIPE_INGREDIENT_FORM;
     }
 
@@ -91,7 +91,6 @@ public class IngredientController {
                     .map(ObjectError::toString)
                     .forEach(log::debug);
 
-            model.addAttribute("uomList", uomService.listAllUoms());
             return RECIPE_INGREDIENT_FORM;
         }
         if (!Objects.equals(recipeId, ingredientCommand.getRecipeId()))
@@ -99,6 +98,11 @@ public class IngredientController {
         ingredientService.saveIngredientCommand(ingredientCommand).log("createOrUpdateIngredient").block();
         return "redirect:/recipe/" + recipeId + "/ingredients";
 
+    }
+
+    @ModelAttribute("uomList")
+    private Flux<UnitOfMeasureCommand> populateUomList(){
+        return uomService.listAllUoms();
     }
 
 }
