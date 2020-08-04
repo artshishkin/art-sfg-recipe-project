@@ -11,10 +11,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-
-import javax.validation.Valid;
 
 @Slf4j
 @Controller
@@ -24,6 +23,13 @@ public class RecipeController {
 
     static final String RECIPE_RECIPEFORM_URL = "recipe/recipeform";
     private final RecipeService recipeService;
+
+    private WebDataBinder webDataBinder;
+
+    @InitBinder
+    private void initBinder(WebDataBinder webDataBinder){
+        this.webDataBinder = webDataBinder;
+    }
 
     @RequestMapping("{id}/show")
     public String showById(@PathVariable("id") String id, Model model) {
@@ -39,7 +45,9 @@ public class RecipeController {
     }
 
     @PostMapping
-    public String createOrUpdate(@Valid @ModelAttribute("recipe") RecipeCommand recipeCommand, BindingResult bindingResult) {
+    public String createOrUpdate(@ModelAttribute("recipe") RecipeCommand recipeCommand) {
+        webDataBinder.validate();
+        BindingResult bindingResult = webDataBinder.getBindingResult();
         if (bindingResult.hasErrors()) {
             bindingResult
                     .getAllErrors()
@@ -55,7 +63,7 @@ public class RecipeController {
 
     @GetMapping("{id}/update")
     public String updateRecipe(@PathVariable String id, Model model) {
-        RecipeCommand recipeCommand = recipeService.getCommandById(id).block();
+        Mono<RecipeCommand> recipeCommand = recipeService.getCommandById(id);
         model.addAttribute("recipe", recipeCommand);
         return RECIPE_RECIPEFORM_URL;
     }
