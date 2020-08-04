@@ -12,7 +12,6 @@ import com.artarkatesoft.repositories.reactive.UnitOfMeasureReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
@@ -80,27 +79,16 @@ public class IngredientServiceImpl implements IngredientService {
                     return ingredient;
                 })
                 .log("updatedIngredient");
-        Mono<Recipe> updatedRecipeMono = Mono.zip(recipeMono, updatedIngredient)
-                .map(tuple2 -> {
+
+        Mono<Ingredient> savedIngredientMono = Mono.zip(recipeMono, updatedIngredient)
+                .flatMap(tuple2 -> {
                     Recipe recipe = tuple2.getT1();
                     Ingredient ingredient = tuple2.getT2();
                     recipe.removeIngredientById(ingredient.getId());
                     recipe.addIngredient(ingredient);
-                    return recipe;
+                    return recipeRepository.save(recipe).then(Mono.just(ingredient));
                 })
-                .flatMap(recipeRepository::save);
-
-        Mono<Ingredient> savedIngredientMono =
-                updatedRecipeMono
-                        .zipWith(updatedIngredient)
-                        .flatMap(tuple2 -> {
-                            Recipe recipe = tuple2.getT1();
-                            Ingredient ingredientUpd = tuple2.getT2();
-                            return Flux.fromIterable(recipe.getIngredients())
-                                    .filter(ingredient -> Objects.equals(ingredientUpd.getId(), ingredient.getId()))
-                                    .next();
-                        })
-                        .switchIfEmpty(Mono.error(new RuntimeException("Ingredient did not save properly")));
+                .log("savedIngredientMono");
 
         return savedIngredientMono.map(toIngredientCommandConverter::convert)
                 .doOnNext(ingredientCommand -> ingredientCommand.setRecipeId(recipeId));
