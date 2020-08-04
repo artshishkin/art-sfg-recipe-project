@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -72,7 +73,7 @@ class RecipeControllerTest {
         recipe.setId(ID);
         recipe.setDescription("Desc1");
 
-        given(recipeService.getById(anyString())).willReturn(recipe);
+        given(recipeService.getById(anyString())).willReturn(Mono.just(recipe));
 
         //when
         mockMvc.perform(get("/recipe/{id}/show", ID))
@@ -131,7 +132,7 @@ class RecipeControllerTest {
     @Test
     void testPostNewRecipeForm() throws Exception {
         //given
-        given(recipeService.saveRecipeCommand(any(RecipeCommand.class))).willReturn(recipeCommand);
+        given(recipeService.saveRecipeCommand(any(RecipeCommand.class))).willReturn(Mono.just(recipeCommand));
 
         //when
         mockMvc
@@ -177,7 +178,7 @@ class RecipeControllerTest {
     @Test
     void testUpdateRecipeForm() throws Exception {
         //given
-        given(recipeService.getCommandById(ID)).willReturn(recipeCommand);
+        given(recipeService.getCommandById(ID)).willReturn(Mono.just(recipeCommand));
 
         //when
         mockMvc.perform(get("/recipe/{id}/update", ID))

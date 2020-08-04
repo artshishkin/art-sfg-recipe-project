@@ -4,7 +4,7 @@ import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.converters.RecipeToRecipeCommandConverter;
 import com.artarkatesoft.domain.Recipe;
 import com.artarkatesoft.exceptions.NotFoundException;
-import com.artarkatesoft.repositories.RecipeRepository;
+import com.artarkatesoft.repositories.reactive.RecipeReactiveRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,10 +14,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.BeanUtils;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,7 +35,7 @@ import static org.mockito.Mockito.times;
 class RecipeServiceImplTest {
 
     @Mock
-    RecipeRepository recipeRepository;
+    RecipeReactiveRepository recipeRepository;
     @Mock
     RecipeToRecipeCommandConverter toRecipeCommandConverter;
 
@@ -60,9 +63,9 @@ class RecipeServiceImplTest {
     @Test
     void getAllRecipes() {
         //given
-        given(recipeRepository.findAll()).willReturn(recipes);
+        given(recipeRepository.findAll()).willReturn(Flux.fromIterable(recipes));
         //when
-        Set<Recipe> allRecipes = recipeService.getAllRecipes();
+        Set<Recipe> allRecipes = recipeService.getAllRecipes().collect(Collectors.toSet()).block();
         //then
         then(recipeRepository).should().findAll();
         assertThat(allRecipes).hasSize(2);
@@ -74,9 +77,9 @@ class RecipeServiceImplTest {
         //given
         String id = "2L";
         Optional<Recipe> recipeOptional = recipes.stream().filter(rec -> id.equals(rec.getId())).findFirst();
-        given(recipeRepository.findById(anyString())).willReturn(recipeOptional);
+        given(recipeRepository.findById(anyString())).willReturn(Mono.justOrEmpty(recipeOptional));
         //when
-        Recipe foundRecipe = recipeService.getById(id);
+        Recipe foundRecipe = recipeService.getById(id).block();
         //then
         then(recipeRepository).should(times(1)).findById(eq(id));
         then(recipeRepository).should(never()).findAll();
@@ -89,9 +92,9 @@ class RecipeServiceImplTest {
     void getByIdWhenNotFound() {
         //given
         String id = "700L";
-        given(recipeRepository.findById(anyString())).willReturn(Optional.empty());
+        given(recipeRepository.findById(anyString())).willReturn(Mono.empty());
         //when
-        Executable findRecipeExecution = () -> recipeService.getById(id);
+        Executable findRecipeExecution = () -> recipeService.getById(id).block();
         //then
         assertThrows(NotFoundException.class, findRecipeExecution);
         then(recipeRepository).should(times(1)).findById(eq(id));
@@ -104,13 +107,13 @@ class RecipeServiceImplTest {
         //given
         Recipe recipe = recipes.iterator().next();
         String id = recipe.getId();
-        given(recipeRepository.findById(id)).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(id)).willReturn(Mono.just(recipe));
         RecipeCommand recipeCommand = new RecipeCommand();
         BeanUtils.copyProperties(recipe, recipeCommand);
         given(toRecipeCommandConverter.convert(any(Recipe.class))).willReturn(recipeCommand);
 
         //when
-        RecipeCommand foundRecipeCommand = recipeService.getCommandById(id);
+        RecipeCommand foundRecipeCommand = recipeService.getCommandById(id).block();
         //then
         then(recipeRepository).should().findById(eq(id));
         then(toRecipeCommandConverter).should().convert(any(Recipe.class));
@@ -122,10 +125,10 @@ class RecipeServiceImplTest {
     void testGetRecipeCommandByIdNotFound() {
         //given
         String id = "123L";
-        given(recipeRepository.findById(anyString())).willReturn(Optional.empty());
+        given(recipeRepository.findById(anyString())).willReturn(Mono.empty());
 
         //when
-        Executable executable = () -> recipeService.getCommandById(id);
+        Executable executable = () -> recipeService.getCommandById(id).block();
         //then
         assertThrows(NotFoundException.class, executable);
     }
@@ -134,8 +137,9 @@ class RecipeServiceImplTest {
     void testDeleteById() {
         //given
         String id = "1L";
+        given(recipeRepository.deleteById(anyString())).willReturn(Mono.empty());
         //when
-        recipeService.deleteById(id);
+        recipeService.deleteById(id).block();
         //then
         then(recipeRepository).should().deleteById(eq(id));
     }

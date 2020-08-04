@@ -26,7 +26,7 @@ public class IngredientController {
     @GetMapping("{recipeId}/ingredients")
     public String getIngredientsList(@PathVariable("recipeId") String recipeId, Model model) {
         log.debug("Getting ingredients list of recipe id: {}", recipeId);
-        RecipeCommand recipeCommand = recipeService.getCommandById(recipeId);
+        RecipeCommand recipeCommand = recipeService.getCommandById(recipeId).block();
         model.addAttribute("recipe", recipeCommand);
         return "recipe/ingredient/list";
     }
@@ -60,7 +60,7 @@ public class IngredientController {
     @GetMapping("{recipeId}/ingredients/new")
     public String showNewIngredientForm(@PathVariable("recipeId") String recipeId,
                                         Model model) {
-        RecipeCommand recipeCommand = recipeService.getCommandById(recipeId);
+        RecipeCommand recipeCommand = recipeService.getCommandById(recipeId).block();
         // TODO: 13.07.2020 Raise Exception if null
         IngredientCommand ingredientCommand = new IngredientCommand();
         ingredientCommand.setRecipeId(recipeId);

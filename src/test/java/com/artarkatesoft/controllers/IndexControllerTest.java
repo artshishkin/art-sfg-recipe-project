@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.ui.Model;
+import reactor.core.publisher.Flux;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -68,7 +69,7 @@ class IndexControllerTest {
     @Test
     void index() {
         //given
-        given(recipeService.getAllRecipes()).willReturn(recipes);
+        given(recipeService.getAllRecipes()).willReturn(Flux.fromIterable(recipes));
         //when
         String index = indexController.index(model);
         //then
@@ -83,7 +84,7 @@ class IndexControllerTest {
     @Test
     void indexCaptor() {
         //given
-        given(recipeService.getAllRecipes()).willReturn(recipes);
+        given(recipeService.getAllRecipes()).willReturn(Flux.fromIterable(recipes));
         //when
         String index = indexController.index(model);
         //then
@@ -97,6 +98,8 @@ class IndexControllerTest {
 
     @Test
     void indexJohn() {
+        //given
+        given(recipeService.getAllRecipes()).willReturn(Flux.fromIterable(recipes));
         //when
         String viewName = indexController.index(model);
         //then
@@ -107,6 +110,8 @@ class IndexControllerTest {
 
     @Test
     void indexJohnBDD() {
+        //given
+        given(recipeService.getAllRecipes()).willReturn(Flux.fromIterable(recipes));
         //when
         String viewName = indexController.index(model);
         //then
@@ -117,7 +122,10 @@ class IndexControllerTest {
 
     @Test
     void testMockMVC() throws Exception {
+        //given
+        given(recipeService.getAllRecipes()).willReturn(Flux.fromIterable(recipes));
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(indexController).build();
+        //when
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.view().name("index"))

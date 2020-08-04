@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 @SpringBootTest
-//@Disabled("not finished migration - will throw - java.lang.IllegalStateException: Failed to load ApplicationContext")
 class RecipeServiceIT {
 
     public static final String NEW_DESCRIPTION = "new description";
@@ -34,11 +33,11 @@ class RecipeServiceIT {
     @Test
     void testSaveOfDescription() {
         //given
-        Recipe testRecipe = recipeService.getAllRecipes().iterator().next();
+        Recipe testRecipe = recipeService.getAllRecipes().next().block();
         RecipeCommand recipeCommand = recipeToRecipeCommandConverter.convert(testRecipe);
         //when
         recipeCommand.setDescription(NEW_DESCRIPTION);
-        RecipeCommand savedRecipeCommand = recipeService.saveRecipeCommand(recipeCommand);
+        RecipeCommand savedRecipeCommand = recipeService.saveRecipeCommand(recipeCommand).block();
         //then
         assertEquals(NEW_DESCRIPTION, savedRecipeCommand.getDescription());
         assertEquals(testRecipe.getId(), savedRecipeCommand.getId());

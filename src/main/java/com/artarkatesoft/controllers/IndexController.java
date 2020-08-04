@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -19,7 +20,7 @@ public class IndexController {
 
     @RequestMapping({"/", "index"})
     public String index(Model model) {
-        Set<Recipe> allRecipes = recipeService.getAllRecipes();
+        Set<Recipe> allRecipes = recipeService.getAllRecipes().collect(Collectors.toSet()).block();
         log.debug("Enter in index method of IndexController. AllRecipes' size is {}", allRecipes.size());
         model.addAttribute("recipes", allRecipes);
         return "index";
