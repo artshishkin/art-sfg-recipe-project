@@ -12,9 +12,11 @@ import com.artarkatesoft.repositories.reactive.UnitOfMeasureReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -62,9 +64,13 @@ public class IngredientServiceImpl implements IngredientService {
         Mono<Ingredient> updatedIngredient = ingredientMono
 
                 .switchIfEmpty(
-                        Mono.justOrEmpty(toIngredientConverter.convert(command))
+                        Mono.just(toIngredientConverter.convert(command))
+                                .log("toIngredientConverter.convert")
+                                .doOnNext(ingredient -> ingredient.setId(UUID.randomUUID().toString()))
+                                .log("setId(UUID.randomUUID().toString())")
                 )
                 .zipWith(uomMono)
+                .log("zipWith(uomMono)")
                 .map(tuple2 -> {
                     Ingredient ingredient = tuple2.getT1();
                     UnitOfMeasure uom = tuple2.getT2();
@@ -72,7 +78,8 @@ public class IngredientServiceImpl implements IngredientService {
                     ingredient.setAmount(command.getAmount());
                     ingredient.setUom(uom);
                     return ingredient;
-                });
+                })
+                .log("updatedIngredient");
         Mono<Recipe> updatedRecipeMono = Mono.zip(recipeMono, updatedIngredient)
                 .map(tuple2 -> {
                     Recipe recipe = tuple2.getT1();
@@ -83,10 +90,17 @@ public class IngredientServiceImpl implements IngredientService {
                 })
                 .flatMap(recipeRepository::save);
 
-        Mono<Ingredient> savedIngredientMono = updatedRecipeMono.flatMapIterable(Recipe::getIngredients)
-                .filter(ingredient -> Objects.equals(command.getId(), ingredient.getId()))
-                .next()
-                .switchIfEmpty(Mono.error(new RuntimeException("Ingredient did not save properly")));
+        Mono<Ingredient> savedIngredientMono =
+                updatedRecipeMono
+                        .zipWith(updatedIngredient)
+                        .flatMap(tuple2 -> {
+                            Recipe recipe = tuple2.getT1();
+                            Ingredient ingredientUpd = tuple2.getT2();
+                            return Flux.fromIterable(recipe.getIngredients())
+                                    .filter(ingredient -> Objects.equals(ingredientUpd.getId(), ingredient.getId()))
+                                    .next();
+                        })
+                        .switchIfEmpty(Mono.error(new RuntimeException("Ingredient did not save properly")));
 
         return savedIngredientMono.map(toIngredientCommandConverter::convert)
                 .doOnNext(ingredientCommand -> ingredientCommand.setRecipeId(recipeId));
