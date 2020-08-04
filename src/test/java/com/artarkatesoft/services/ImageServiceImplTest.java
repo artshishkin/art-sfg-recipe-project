@@ -1,7 +1,7 @@
 package com.artarkatesoft.services;
 
 import com.artarkatesoft.domain.Recipe;
-import com.artarkatesoft.repositories.RecipeRepository;
+import com.artarkatesoft.repositories.reactive.RecipeReactiveRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,8 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
-
-import java.util.Optional;
+import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,7 +29,7 @@ class ImageServiceImplTest {
     ImageServiceImpl imageService;
 
     @Mock
-    RecipeRepository recipeRepository;
+    RecipeReactiveRepository recipeRepository;
 
     @Captor
     ArgumentCaptor<Recipe> recipeArgumentCaptor;
@@ -43,9 +42,10 @@ class ImageServiceImplTest {
         String recipeId = "1L";
         Recipe recipe = new Recipe();
         recipe.setId(recipeId);
-        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Mono.just(recipe));
+        given(recipeRepository.save(any(Recipe.class))).willReturn(Mono.just(recipe));
         //when
-        imageService.saveImageFile(recipeId, multipartFile);
+        imageService.saveImageFile(recipeId, multipartFile).block();
         //then
         then(recipeRepository).should().findById(eq(recipeId));
         then(recipeRepository).should().save(recipeArgumentCaptor.capture());
@@ -60,9 +60,9 @@ class ImageServiceImplTest {
         //given
         MockMultipartFile multipartFile = new MockMultipartFile("imagefile", "testing.txtx", "text/plain", "ArtArKateSoft.com".getBytes());
         String recipeId = "1L";
-        given(recipeRepository.findById(anyString())).willReturn(Optional.empty());
+        given(recipeRepository.findById(anyString())).willReturn(Mono.empty());
         //when
-        Executable storeImageExecutable = () -> imageService.saveImageFile(recipeId, multipartFile);
+        Executable storeImageExecutable = () -> imageService.saveImageFile(recipeId, multipartFile).block();
         //then
         assertThrows(RuntimeException.class, storeImageExecutable);
         then(recipeRepository).should().findById(eq(recipeId));
@@ -79,10 +79,10 @@ class ImageServiceImplTest {
         recipe.setId(recipeId);
         byte[] fakeImage = "This is fake image".getBytes();
         recipe.setImage(fakeImage);
-        given(recipeRepository.findById(anyString())).willReturn(Optional.of(recipe));
+        given(recipeRepository.findById(anyString())).willReturn(Mono.just(recipe));
 
         //when
-        byte[] retrievedImage = imageService.getImageByRecipeId(recipeId);
+        byte[] retrievedImage = imageService.getImageByRecipeId(recipeId).block();
         //then
         then(recipeRepository).should(times(1)).findById(eq(recipeId));
         assertThat(retrievedImage).isEqualTo(fakeImage);
