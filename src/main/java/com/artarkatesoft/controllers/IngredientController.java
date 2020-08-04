@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
@@ -26,7 +27,7 @@ public class IngredientController {
     @GetMapping("{recipeId}/ingredients")
     public String getIngredientsList(@PathVariable("recipeId") String recipeId, Model model) {
         log.debug("Getting ingredients list of recipe id: {}", recipeId);
-        RecipeCommand recipeCommand = recipeService.getCommandById(recipeId).block();
+        Mono<RecipeCommand> recipeCommand = recipeService.getCommandById(recipeId);
         model.addAttribute("recipe", recipeCommand);
         return "recipe/ingredient/list";
     }
@@ -35,7 +36,7 @@ public class IngredientController {
     public String getIngredientByRecipeIdAndIngredientId(@PathVariable("recipeId") String recipeId,
                                                          @PathVariable("id") String id,
                                                          Model model) {
-        IngredientCommand ingredient = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId).block();
+        Mono<IngredientCommand> ingredient = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
         model.addAttribute("ingredient", ingredient);
         return "recipe/ingredient/show";
     }
@@ -44,9 +45,9 @@ public class IngredientController {
     public String showUpdateForm(@PathVariable("recipeId") String recipeId,
                                  @PathVariable("id") String id,
                                  Model model) {
-        IngredientCommand command = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId).block();
+        Mono<IngredientCommand> command = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
         model.addAttribute("ingredient", command);
-        model.addAttribute("uomList", uomService.listAllUoms().collectList().block());
+        model.addAttribute("uomList", uomService.listAllUoms());
         return "recipe/ingredient/ingredient_form";
     }
 
@@ -65,7 +66,7 @@ public class IngredientController {
         IngredientCommand ingredientCommand = new IngredientCommand();
         ingredientCommand.setRecipeId(recipeId);
         model.addAttribute("ingredient", ingredientCommand);
-        model.addAttribute("uomList", uomService.listAllUoms().collectList().block());
+        model.addAttribute("uomList", uomService.listAllUoms());
         return "recipe/ingredient/ingredient_form";
     }
 

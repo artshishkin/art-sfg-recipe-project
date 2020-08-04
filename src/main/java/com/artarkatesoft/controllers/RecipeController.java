@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
 
@@ -26,7 +27,7 @@ public class RecipeController {
 
     @RequestMapping("{id}/show")
     public String showById(@PathVariable("id") String id, Model model) {
-        Recipe recipe = recipeService.getById(id).block();
+        Mono<Recipe> recipe = recipeService.getById(id);
         model.addAttribute("recipe", recipe);
         return "recipe/show";
     }
