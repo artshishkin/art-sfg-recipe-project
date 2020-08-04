@@ -21,6 +21,6 @@ public class IndexController {
         log.debug("in index controller");
         Flux<Recipe> allRecipes = recipeService.getAllRecipes();
         model.addAttribute("recipes", allRecipes);
-        return "index";
+        return "home";
     }
 }
