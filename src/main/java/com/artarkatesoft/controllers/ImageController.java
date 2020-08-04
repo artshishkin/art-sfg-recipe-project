@@ -23,14 +23,14 @@ public class ImageController {
     @PostMapping("/recipe/{id}/image")
     public String handleImageUploadForm(@PathVariable("id") String id,
                                         @RequestParam("imagefile") MultipartFile file) {
-        imageService.saveImageFile(id, file);
+        imageService.saveImageFile(id, file).block();
         return "redirect:/recipe/" + id + "/show";
     }
 
     @ResponseBody
     @GetMapping(value = "/recipe/{id}/recipe_image", produces = MediaType.IMAGE_JPEG_VALUE)
     public byte[] getRecipeImage(@PathVariable("id") String recipeId) {
-        return imageService.getImageByRecipeId(recipeId);
+        return imageService.getImageByRecipeId(recipeId).block();
     }
 
 }

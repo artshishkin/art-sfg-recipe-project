@@ -16,10 +16,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
@@ -66,6 +66,7 @@ class ImageControllerTest {
         //given
         MockMultipartFile multipartFile = new MockMultipartFile("imagefile", "testing.txtx", "text/plain", "ArtArKateSoft.com".getBytes());
         String recipeId = "1L";
+        given(imageService.saveImageFile(anyString(),any())).willReturn(Mono.empty());
         //when
         mockMvc
                 .perform(
@@ -81,7 +82,7 @@ class ImageControllerTest {
         //given
         String recipeId = "1L";
         byte[] imageBytes = "This is fake image".getBytes();
-        given(imageService.getImageByRecipeId(anyString())).willReturn(imageBytes);
+        given(imageService.getImageByRecipeId(anyString())).willReturn(Mono.just(imageBytes));
 
         //when
         MvcResult mvcResult = mockMvc.perform(get("/recipe/{id}/recipe_image", recipeId))
