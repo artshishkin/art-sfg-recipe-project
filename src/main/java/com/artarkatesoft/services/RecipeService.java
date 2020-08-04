@@ -2,14 +2,14 @@ package com.artarkatesoft.services;
 
 import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.domain.Recipe;
-
-import java.util.Set;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface RecipeService {
-    Set<Recipe> getAllRecipes();
-    Recipe getById(String id);
-    RecipeCommand saveRecipeCommand(RecipeCommand recipeCommand);
-    RecipeCommand getCommandById(String id);
+    Flux<Recipe> getAllRecipes();
+    Mono<Recipe> getById(String id);
+    Mono<RecipeCommand> saveRecipeCommand(RecipeCommand recipeCommand);
+    Mono<RecipeCommand> getCommandById(String id);
 
-    void deleteById(String id);
+    Mono<Void> deleteById(String id);
 }

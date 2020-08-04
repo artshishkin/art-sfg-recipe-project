@@ -78,7 +78,7 @@ class IngredientControllerTest {
     @Test
     void testGetListOfIngredients() throws Exception {
         //given
-        given(recipeService.getCommandById(anyString())).willReturn(defaultRecipeCommand);
+        given(recipeService.getCommandById(anyString())).willReturn(Mono.just(defaultRecipeCommand));
 
         //when
         mockMvc.perform(get("/recipe/{recipeId}/ingredients", RECIPE_ID))
@@ -135,7 +135,7 @@ class IngredientControllerTest {
     void testNewIngredientForm() throws Exception {
         //given
         given(recipeService.getCommandById(anyString()))
-                .willReturn(defaultRecipeCommand);
+                .willReturn(Mono.just(defaultRecipeCommand));
         given(uomService.listAllUoms()).willReturn(Flux.empty());
         //when
         mockMvc.perform(get("/recipe/{recipeId}/ingredients/new", RECIPE_ID))
@@ -188,7 +188,7 @@ class IngredientControllerTest {
         //given
         String recipeId = "100";
         String ingredientId = "123";
-        given(ingredientService.deleteByIdAndRecipeId(anyString(),anyString())).willReturn(Mono.empty());
+        given(ingredientService.deleteByIdAndRecipeId(anyString(), anyString())).willReturn(Mono.empty());
         //when
         mockMvc.perform(get("/recipe/{recipeId}/ingredients/{id}/delete", recipeId, ingredientId))
                 .andExpect(status().is3xxRedirection())
