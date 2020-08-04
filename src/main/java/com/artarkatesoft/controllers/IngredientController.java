@@ -9,6 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -20,9 +23,16 @@ import java.util.Objects;
 @RequestMapping("recipe")
 public class IngredientController {
 
+    public static final String RECIPE_INGREDIENT_FORM = "recipe/ingredient/ingredient_form";
     private final RecipeService recipeService;
     private final IngredientService ingredientService;
     private final UnitOfMeasureService uomService;
+    private WebDataBinder webDataBinder;
+
+    @InitBinder("ingredient")
+    private void initBinder(WebDataBinder webDataBinder) {
+        this.webDataBinder = webDataBinder;
+    }
 
     @GetMapping("{recipeId}/ingredients")
     public String getIngredientsList(@PathVariable("recipeId") String recipeId, Model model) {
@@ -48,7 +58,7 @@ public class IngredientController {
         Mono<IngredientCommand> command = ingredientService.findIngredientCommandByIdAndRecipeId(id, recipeId);
         model.addAttribute("ingredient", command);
         model.addAttribute("uomList", uomService.listAllUoms());
-        return "recipe/ingredient/ingredient_form";
+        return RECIPE_INGREDIENT_FORM;
     }
 
     @GetMapping("{recipeId}/ingredients/{id}/delete")
@@ -67,11 +77,23 @@ public class IngredientController {
         ingredientCommand.setRecipeId(recipeId);
         model.addAttribute("ingredient", ingredientCommand);
         model.addAttribute("uomList", uomService.listAllUoms());
-        return "recipe/ingredient/ingredient_form";
+        return RECIPE_INGREDIENT_FORM;
     }
 
     @PostMapping("{recipeId}/ingredients")
-    public String createOrUpdateIngredient(@ModelAttribute("ingredient") IngredientCommand ingredientCommand, @PathVariable("recipeId") String recipeId) {
+    public String createOrUpdateIngredient(@ModelAttribute("ingredient") IngredientCommand ingredientCommand, @PathVariable("recipeId") String recipeId, Model model) {
+        webDataBinder.validate();
+        BindingResult bindingResult = webDataBinder.getBindingResult();
+        if (bindingResult.hasErrors()) {
+            bindingResult
+                    .getAllErrors()
+                    .stream()
+                    .map(ObjectError::toString)
+                    .forEach(log::debug);
+
+            model.addAttribute("uomList", uomService.listAllUoms());
+            return RECIPE_INGREDIENT_FORM;
+        }
         if (!Objects.equals(recipeId, ingredientCommand.getRecipeId()))
             throw new RuntimeException("ID of recipe does not match");
         ingredientService.saveIngredientCommand(ingredientCommand).log("createOrUpdateIngredient").block();
