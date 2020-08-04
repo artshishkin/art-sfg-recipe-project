@@ -12,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
 
@@ -69,10 +68,9 @@ public class RecipeController {
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ModelAndView handleNotFound(Exception exception) {
+    public String handleNotFound(Exception exception, Model model) {
         log.error("Handling not found exception." + exception.getMessage());
-        ModelAndView modelAndView = new ModelAndView("404error");
-        modelAndView.addObject("exception", exception);
-        return modelAndView;
+        model.addAttribute("exception", exception);
+        return "404error";
     }
 }
