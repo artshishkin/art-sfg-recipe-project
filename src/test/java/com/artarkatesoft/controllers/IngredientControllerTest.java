@@ -7,6 +7,7 @@ import com.artarkatesoft.services.IngredientService;
 import com.artarkatesoft.services.RecipeService;
 import com.artarkatesoft.services.UnitOfMeasureService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -37,6 +38,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Disabled
 @ExtendWith(MockitoExtension.class)
 class IngredientControllerTest {
 
