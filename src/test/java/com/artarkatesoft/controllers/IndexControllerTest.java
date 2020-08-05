@@ -90,7 +90,7 @@ class IndexControllerTest {
         //then
         then(model).should().addAttribute(stringCaptor.capture(), recipeFluxCaptor.capture());
         then(recipeService).should().getAllRecipes();
-        assertThat(index).isEqualTo("index");
+        assertThat(index).isEqualTo("home");
         assertThat(stringCaptor.getValue()).isEqualTo("recipes");
         assertThat(recipeFluxCaptor.getValue().collectList().block()).hasSize(2);
     }
@@ -104,7 +104,7 @@ class IndexControllerTest {
         //then
         verify(model).addAttribute(eq("recipes"), any(Flux.class));
         verify(recipeService, times(1)).getAllRecipes();
-        assertThat(viewName).isEqualTo("index");
+        assertThat(viewName).isEqualTo("home");
     }
 
     @Test
@@ -116,7 +116,7 @@ class IndexControllerTest {
         //then
         then(model).should().addAttribute(eq("recipes"), any(Flux.class));
         then(recipeService).should().getAllRecipes();
-        assertThat(viewName).isEqualTo("index");
+        assertThat(viewName).isEqualTo("home");
     }
 
 //    @Test
