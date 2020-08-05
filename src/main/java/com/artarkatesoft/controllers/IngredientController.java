@@ -3,6 +3,7 @@ package com.artarkatesoft.controllers;
 import com.artarkatesoft.commands.IngredientCommand;
 import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.commands.UnitOfMeasureCommand;
+import com.artarkatesoft.exceptions.NotFoundException;
 import com.artarkatesoft.services.IngredientService;
 import com.artarkatesoft.services.RecipeService;
 import com.artarkatesoft.services.UnitOfMeasureService;
@@ -71,14 +72,17 @@ public class IngredientController {
     }
 
     @GetMapping("{recipeId}/ingredients/new")
-    public String showNewIngredientForm(@PathVariable("recipeId") String recipeId,
-                                        Model model) {
-        RecipeCommand recipeCommand = recipeService.getCommandById(recipeId).block();
-        // TODO: 13.07.2020 Raise Exception if null
-        IngredientCommand ingredientCommand = new IngredientCommand();
-        ingredientCommand.setRecipeId(recipeId);
-        model.addAttribute("ingredient", ingredientCommand);
-        return RECIPE_INGREDIENT_FORM;
+    public Mono<String> showNewIngredientForm(@PathVariable("recipeId") String recipeId,
+                                              Model model) {
+        return recipeService.getCommandById(recipeId)
+                .switchIfEmpty(Mono.error(new NotFoundException("Recipe with id " + recipeId + " not found")))
+                .map(recipeCommand -> {
+                    IngredientCommand ingredientCommand = new IngredientCommand();
+                    ingredientCommand.setRecipeId(recipeId);
+                    model.addAttribute("ingredient", ingredientCommand);
+                    return Mono.empty();
+                })
+                .then(Mono.just(RECIPE_INGREDIENT_FORM));
     }
 
     @PostMapping("{recipeId}/ingredients")

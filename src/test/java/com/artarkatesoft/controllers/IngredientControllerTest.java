@@ -143,14 +143,16 @@ class IngredientControllerTest {
         given(uomService.listAllUoms()).willReturn(Flux.empty());
         //when
         executeModelAttributeMethod();
-        String view = ingredientController.showNewIngredientForm(RECIPE_ID, model);
+        Mono<String> view = ingredientController.showNewIngredientForm(RECIPE_ID, model);
 
         //then
+        StepVerifier.create(view)
+                .expectNext(IngredientController.RECIPE_INGREDIENT_FORM)
+                .verifyComplete();
         then(recipeService).should().getCommandById(eq(RECIPE_ID));
         then(uomService).should().listAllUoms();
         then(model).should().addAttribute(eq("uomList"), any(Flux.class));
         then(model).should().addAttribute(eq("ingredient"), any(IngredientCommand.class));
-        assertThat(view).isEqualTo(IngredientController.RECIPE_INGREDIENT_FORM);
     }
 
 
