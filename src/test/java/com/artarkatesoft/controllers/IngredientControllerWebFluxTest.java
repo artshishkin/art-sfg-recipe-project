@@ -8,20 +8,19 @@ import com.artarkatesoft.services.RecipeService;
 import com.artarkatesoft.services.UnitOfMeasureService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.ui.Model;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Captor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,26 +28,25 @@ import java.util.stream.LongStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
+@WebFluxTest(IngredientController.class)
+class IngredientControllerWebFluxTest {
 
-@ExtendWith(MockitoExtension.class)
-class IngredientControllerTest {
+    @Autowired
+    WebTestClient webTestClient;
 
-    @InjectMocks
-    IngredientController ingredientController;
-
-    @Mock
+    @MockBean
     RecipeService recipeService;
-    @Mock
+    @MockBean
     IngredientService ingredientService;
-    @Mock
+    @MockBean
     UnitOfMeasureService uomService;
-    @Mock
-    Model model;
 
     private RecipeCommand defaultRecipeCommand;
     public static final String RECIPE_ID = "1";
@@ -72,108 +70,86 @@ class IngredientControllerTest {
         defaultRecipeCommand.setIngredients(ingredients);
     }
 
-    private void executeModelAttributeMethod() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Method populateUomList = IngredientController.class.getDeclaredMethod("populateUomList");
-        populateUomList.setAccessible(true);
-        Object invoke = populateUomList.invoke(ingredientController);
-        Flux<UnitOfMeasureCommand> uomFlux = (Flux<UnitOfMeasureCommand>) invoke;
-        model.addAttribute("uomList", uomFlux);
-    }
-
     @Test
     void testGetListOfIngredients() {
         //given
-        String recipeId = RECIPE_ID;
-        Mono<RecipeCommand> commandMono = Mono.just(defaultRecipeCommand);
-        given(recipeService.getCommandById(anyString())).willReturn(commandMono);
+        given(recipeService.getCommandById(anyString())).willReturn(Mono.just(defaultRecipeCommand));
 
         //when
-        String view = ingredientController.getIngredientsList(recipeId, model);
+        webTestClient.get().uri("/recipe/{recipeId}/ingredients", RECIPE_ID)
+                .exchange()
+                .expectStatus().isOk();
         //then
         then(recipeService).should(times(1)).getCommandById(eq(RECIPE_ID));
-        then(model).should().addAttribute(eq("recipe"), eq(commandMono));
-
-        assertThat(view).isEqualTo("recipe/ingredient/list");
     }
 
     @Test
     void testShowIngredient() {
         //given
-        String recipeId = RECIPE_ID;
-        String ingredientId = "2Lwer";
         IngredientCommand ingredientCommand = defaultRecipeCommand.getIngredients().iterator().next();
-        Mono<IngredientCommand> ingredientCommandMono = Mono.just(ingredientCommand);
         given(ingredientService.findIngredientCommandByIdAndRecipeId(anyString(), anyString()))
-                .willReturn(ingredientCommandMono);
+                .willReturn(Mono.just(ingredientCommand));
 
         //when
-        String view = ingredientController.getIngredientByRecipeIdAndIngredientId(recipeId, ingredientId, model);
+        webTestClient.get().uri("/recipe/1/ingredients/2/show")
+                .exchange()
+                .expectStatus().isOk();
         //then
-        then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq(ingredientId), eq(recipeId));
-        then(model).should().addAttribute(eq("ingredient"), eq(ingredientCommandMono));
-        assertThat(view).isEqualTo("recipe/ingredient/show");
+        then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq("2"), eq("1"));
     }
 
     @Test
-    void testShowUpdateForm() throws Exception {
+    void testShowUpdateForm() {
         //given
         IngredientCommand ingredientCommand = defaultRecipeCommand.getIngredients().iterator().next();
-        Mono<IngredientCommand> ingredientCommandMono = Mono.just(ingredientCommand);
         given(ingredientService.findIngredientCommandByIdAndRecipeId(anyString(), anyString()))
-                .willReturn(ingredientCommandMono);
+                .willReturn(Mono.just(ingredientCommand));
         given(uomService.listAllUoms()).willReturn(Flux.empty());
         //when
-        executeModelAttributeMethod();
-        String view = ingredientController.showUpdateForm("1", "2", model);
+        webTestClient.get().uri("/recipe/1/ingredients/2/update")
+                .exchange()
+                .expectStatus().isOk();
         //then
         then(ingredientService).should().findIngredientCommandByIdAndRecipeId(eq("2"), eq("1"));
         then(uomService).should().listAllUoms();
-        then(model).should().addAttribute(eq("uomList"), any(Flux.class));
-        then(model).should().addAttribute(eq("ingredient"), eq(ingredientCommandMono));
-
-        assertThat(view).isEqualTo("recipe/ingredient/ingredient_form");
     }
 
-
     @Test
-    void testNewIngredientForm() throws Exception {
+    void testNewIngredientForm() {
         //given
         given(recipeService.getCommandById(anyString()))
                 .willReturn(Mono.just(defaultRecipeCommand));
         given(uomService.listAllUoms()).willReturn(Flux.empty());
         //when
-        executeModelAttributeMethod();
-        String view = ingredientController.showNewIngredientForm(RECIPE_ID, model);
+        webTestClient.get().uri("/recipe/{recipeId}/ingredients/new", RECIPE_ID)
+                .exchange()
+                .expectStatus().isOk();
 
         //then
         then(recipeService).should().getCommandById(eq(RECIPE_ID));
         then(uomService).should().listAllUoms();
-        then(model).should().addAttribute(eq("uomList"), any(Flux.class));
-        then(model).should().addAttribute(eq("ingredient"), any(IngredientCommand.class));
-        assertThat(view).isEqualTo(IngredientController.RECIPE_INGREDIENT_FORM);
     }
-
 
     @Test
     public void testCreateOrUpdateIngredient() throws Exception {
         //given
         IngredientCommand someCommand = defaultRecipeCommand.getIngredients().iterator().next();
         MultiValueMap<String, String> commandParams = new LinkedMultiValueMap<>();
-        commandParams.add("id", someCommand.getId().toString());
-        commandParams.add("recipeId", RECIPE_ID.toString());
+        commandParams.add("id", someCommand.getId());
+        commandParams.add("recipeId", RECIPE_ID);
         commandParams.add("amount", someCommand.getAmount().toString());
         commandParams.add("description", someCommand.getDescription());
-        commandParams.add("uom.id", someCommand.getUom().getId().toString());
-        given(ingredientService.saveIngredientCommand(ArgumentMatchers.any(IngredientCommand.class))).willReturn(Mono.just(someCommand));
+        commandParams.add("uom.id", someCommand.getUom().getId());
 
+        given(ingredientService.saveIngredientCommand(ArgumentMatchers.any(IngredientCommand.class))).willReturn(Mono.just(someCommand));
         //when
-        initWebDataBinderNoErrors();
-        Mono<String> viewMono = ingredientController.createOrUpdateIngredient(someCommand, RECIPE_ID, model);
+        webTestClient.post().uri("/recipe/{recipeId}/ingredients", RECIPE_ID)
+                .contentType(APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData(commandParams))
+                .exchange()
+                .expectStatus().is3xxRedirection();
 
         //then
-        StepVerifier.create(viewMono)
-                .expectNext("redirect:/recipe/1/ingredients")
-                .verifyComplete();
         then(ingredientService).should().saveIngredientCommand(commandCaptor.capture());
         IngredientCommand captorValue = commandCaptor.getValue();
         assertAll(
@@ -185,26 +161,17 @@ class IngredientControllerTest {
         );
     }
 
-    private void initWebDataBinderNoErrors() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        WebDataBinder webDataBinder = mock(WebDataBinder.class);
-        BindingResult bindingResult = mock(BindingResult.class);
-        when(webDataBinder.getBindingResult()).thenReturn(bindingResult);
-        when(bindingResult.hasErrors()).thenReturn(false);
-        Method initBinder = IngredientController.class.getDeclaredMethod("initBinder", WebDataBinder.class);
-        initBinder.setAccessible(true);
-        initBinder.invoke(ingredientController, webDataBinder);
-    }
-
     @Test
-    public void testDeleteIngredient() {
+    public void testDeleteIngredient() throws Exception {
         //given
         String recipeId = "100";
         String ingredientId = "123";
         given(ingredientService.deleteByIdAndRecipeId(anyString(), anyString())).willReturn(Mono.empty());
         //when
-        String view = ingredientController.deleteIngredient(recipeId, ingredientId);
+        webTestClient.get().uri("/recipe/{recipeId}/ingredients/{id}/delete", recipeId, ingredientId)
+                .exchange()
+                .expectStatus().is3xxRedirection();
         //then
         then(ingredientService).should().deleteByIdAndRecipeId(eq(ingredientId), eq(recipeId));
-        assertThat(view).isEqualTo("redirect:/recipe/" + recipeId + "/ingredients");
     }
 }

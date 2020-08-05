@@ -81,7 +81,7 @@ public class IngredientController {
     }
 
     @PostMapping("{recipeId}/ingredients")
-    public String createOrUpdateIngredient(@ModelAttribute("ingredient") IngredientCommand ingredientCommand, @PathVariable("recipeId") String recipeId, Model model) {
+    public Mono<String> createOrUpdateIngredient(@ModelAttribute("ingredient") IngredientCommand ingredientCommand, @PathVariable("recipeId") String recipeId, Model model) {
         webDataBinder.validate();
         BindingResult bindingResult = webDataBinder.getBindingResult();
         if (bindingResult.hasErrors()) {
@@ -91,17 +91,18 @@ public class IngredientController {
                     .map(ObjectError::toString)
                     .forEach(log::debug);
 
-            return RECIPE_INGREDIENT_FORM;
+            return Mono.just(RECIPE_INGREDIENT_FORM);
         }
         if (!Objects.equals(recipeId, ingredientCommand.getRecipeId()))
             throw new RuntimeException("ID of recipe does not match");
-        ingredientService.saveIngredientCommand(ingredientCommand).log("createOrUpdateIngredient").block();
-        return "redirect:/recipe/" + recipeId + "/ingredients";
-
+        return ingredientService
+                .saveIngredientCommand(ingredientCommand)
+                .log("createOrUpdateIngredient")
+                .then(Mono.just("redirect:/recipe/" + recipeId + "/ingredients"));
     }
 
     @ModelAttribute("uomList")
-    private Flux<UnitOfMeasureCommand> populateUomList(){
+    private Flux<UnitOfMeasureCommand> populateUomList() {
         return uomService.listAllUoms();
     }
 
