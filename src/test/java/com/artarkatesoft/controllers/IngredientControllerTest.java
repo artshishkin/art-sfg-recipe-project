@@ -202,9 +202,11 @@ class IngredientControllerTest {
         String ingredientId = "123";
         given(ingredientService.deleteByIdAndRecipeId(anyString(), anyString())).willReturn(Mono.empty());
         //when
-        String view = ingredientController.deleteIngredient(recipeId, ingredientId);
+        Mono<String> view = ingredientController.deleteIngredient(recipeId, ingredientId);
         //then
+        StepVerifier.create(view)
+                .expectNext("redirect:/recipe/" + recipeId + "/ingredients")
+                .verifyComplete();
         then(ingredientService).should().deleteByIdAndRecipeId(eq(ingredientId), eq(recipeId));
-        assertThat(view).isEqualTo("redirect:/recipe/" + recipeId + "/ingredients");
     }
 }

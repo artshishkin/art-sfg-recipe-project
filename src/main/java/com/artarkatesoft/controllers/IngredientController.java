@@ -63,10 +63,11 @@ public class IngredientController {
     }
 
     @GetMapping("{recipeId}/ingredients/{id}/delete")
-    public String deleteIngredient(@PathVariable("recipeId") String recipeId,
-                                   @PathVariable("id") String id) {
-        ingredientService.deleteByIdAndRecipeId(id, recipeId).block();
-        return "redirect:/recipe/" + recipeId + "/ingredients";
+    public Mono<String> deleteIngredient(@PathVariable("recipeId") String recipeId,
+                                         @PathVariable("id") String id) {
+        return ingredientService
+                .deleteByIdAndRecipeId(id, recipeId)
+                .then(Mono.just("redirect:/recipe/" + recipeId + "/ingredients"));
     }
 
     @GetMapping("{recipeId}/ingredients/new")
