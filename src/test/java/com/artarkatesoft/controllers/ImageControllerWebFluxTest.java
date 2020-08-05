@@ -14,9 +14,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
 @WebFluxTest(controllers = ImageController.class)
 class ImageControllerWebFluxTest {
@@ -46,4 +47,36 @@ class ImageControllerWebFluxTest {
                 //then
                 .expectStatus().is3xxRedirection();
     }
+
+    @Test
+    void testShowImageUploadForm() throws Exception {
+        //given
+        String recipeId = "id123";
+        //when
+        webTestClient
+                .get().uri("/recipe/{id}/image", recipeId)
+                .exchange()
+                //then
+                .expectStatus().isOk();
+    }
+
+    @Test
+    void renderImageFromDB() {
+        //given
+        String recipeId = "1L";
+        byte[] imageBytes = "This is fake image".getBytes();
+        given(imageService.getImageByRecipeId(anyString())).willReturn(Mono.just(imageBytes));
+
+        //when
+        byte[] bodyContent = webTestClient.get().uri("/recipe/{id}/recipe_image", recipeId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.IMAGE_JPEG)
+                .returnResult(Object.class)
+                .getResponseBodyContent();
+        //then
+        assertThat(bodyContent).isEqualTo(imageBytes);
+        then(imageService).should().getImageByRecipeId(eq(recipeId));
+    }
+
 }
