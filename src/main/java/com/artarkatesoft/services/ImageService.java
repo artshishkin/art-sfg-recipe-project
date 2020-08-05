@@ -1,10 +1,10 @@
 package com.artarkatesoft.services;
 
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.codec.multipart.Part;
 import reactor.core.publisher.Mono;
 
 public interface ImageService {
-    Mono<Void> saveImageFile(String recipeId, MultipartFile file);
+    Mono<Void> saveImageFile(String recipeId, Mono<Part> filePart);
 
     Mono<byte[]> getImageByRecipeId(String recipeId);
 }

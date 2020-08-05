@@ -5,11 +5,12 @@ import com.artarkatesoft.exceptions.NotFoundException;
 import com.artarkatesoft.repositories.reactive.RecipeReactiveRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.codec.multipart.Part;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.io.IOException;
 
 @Service
 @Slf4j
@@ -19,21 +20,19 @@ public class ImageServiceImpl implements ImageService {
     private final RecipeReactiveRepository recipeRepository;
 
     @Override
-    public Mono<Void> saveImageFile(String recipeId, MultipartFile file) {
+    public Mono<Void> saveImageFile(String recipeId, Mono<Part> filePart) {
         log.debug("Receive a file");
         Mono<Recipe> recipeMono = recipeRepository.findById(recipeId)
                 .switchIfEmpty(Mono.error(new NotFoundException("Recipe with id " + recipeId + " not found")));
         return recipeMono
-                .map(recipe -> {
-
-                    byte[] fileBytes = new byte[0];
-                    try {
-                        fileBytes = file.getBytes();
-                        recipe.setImage(fileBytes);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Failed to read read byte array from multipart file");
-                    }
-                    return recipe;
+                .flatMap(recipe -> {
+                    Flux<DataBuffer> dataBufferFlux = filePart.flatMapMany(part -> part.content());
+                    Mono<DataBuffer> dataBufferMono = DataBufferUtils.join(dataBufferFlux);
+                    Mono<byte[]> fileContent = dataBufferMono.map(dataBuffer -> dataBuffer.asByteBuffer().array());
+                    return fileContent.map(image -> {
+                        recipe.setImage(image);
+                        return recipe;
+                    });
                 })
                 .flatMap(recipeRepository::save)
                 .then();

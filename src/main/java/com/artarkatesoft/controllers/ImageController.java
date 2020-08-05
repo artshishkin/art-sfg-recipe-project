@@ -8,7 +8,6 @@ import org.springframework.http.codec.multipart.Part;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Controller
@@ -27,18 +26,8 @@ public class ImageController {
     @PostMapping(value = "/recipe/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<String> handleImageUploadForm(@PathVariable("id") String id,
                                               @RequestPart("imagefile") Mono<Part> filePart) {
-        Flux<Integer> integerFlux = filePart.flatMapMany(part -> {
-            log.debug("FilePart name: {}", part.name());
-            Flux<Integer> map = part.content()
-                    .map(dataBuffer -> dataBuffer.readableByteCount());
-            return map;
-        });
-
-        return integerFlux
-                .doOnNext(count -> log.debug("readableByteCount: {}", count))
+        return imageService.saveImageFile(id, filePart)
                 .then(Mono.just("redirect:/recipe/" + id + "/show"));
-
-//        return "redirect:/recipe/" + id + "/show";
     }
 //
 //    @PostMapping("/recipe/{id}/image")

@@ -12,6 +12,11 @@ import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
+import reactor.core.publisher.Mono;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 
 @WebFluxTest(controllers = ImageController.class)
 class ImageControllerWebFluxTest {
@@ -26,30 +31,19 @@ class ImageControllerWebFluxTest {
     void handleImageUploadForm() {
         //given
         byte[] imageBytes = "This is fake image".getBytes();
-        ByteArrayResource byteArrayResource = new FileByteArrayResource(imageBytes);
+        ByteArrayResource byteArrayResource = new ByteArrayResource(imageBytes);
         MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
-        multipartBodyBuilder.part("imagefile", byteArrayResource)
-//                .contentType(MediaType.MULTIPART_FORM_DATA)
-        ;
+        multipartBodyBuilder.part("imagefile", byteArrayResource);
         MultiValueMap<String, HttpEntity<?>> body = multipartBodyBuilder.build();
+
+        given(imageService.saveImageFile(anyString(), any(Mono.class))).willReturn(Mono.empty());
 
         //when
         webTestClient.post().uri("/recipe/{id}/image", "someId")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(body))
                 .exchange()
+                //then
                 .expectStatus().is3xxRedirection();
-    }
-
-    static class FileByteArrayResource extends ByteArrayResource {
-
-        public FileByteArrayResource(byte[] byteArray) {
-            super(byteArray);
-        }
-
-        @Override
-        public String getFilename() {
-            return "artFileName";
-        }
     }
 }
