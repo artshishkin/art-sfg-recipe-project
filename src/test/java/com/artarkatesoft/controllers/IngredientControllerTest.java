@@ -3,17 +3,17 @@ package com.artarkatesoft.controllers;
 import com.artarkatesoft.commands.IngredientCommand;
 import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.commands.UnitOfMeasureCommand;
+import com.artarkatesoft.exceptions.NotFoundException;
 import com.artarkatesoft.services.IngredientService;
 import com.artarkatesoft.services.RecipeService;
 import com.artarkatesoft.services.UnitOfMeasureService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ui.Model;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import reactor.core.publisher.Flux;
@@ -29,6 +29,7 @@ import java.util.stream.LongStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -155,21 +156,37 @@ class IngredientControllerTest {
         then(model).should().addAttribute(eq("ingredient"), any(IngredientCommand.class));
     }
 
+    @Test
+    void testNewIngredientForm_notFound() throws Exception {
+        //given
+        given(recipeService.getCommandById(anyString()))
+                .willReturn(Mono.empty());
+        //when
+        Mono<String> view = ingredientController.showNewIngredientForm(RECIPE_ID, model);
+
+        //then
+        StepVerifier.create(view)
+                .verifyErrorMatches(ex -> (ex instanceof NotFoundException) && (ex.getMessage().equals("Recipe with id " + RECIPE_ID + " not found")));
+        then(recipeService).should().getCommandById(eq(RECIPE_ID));
+        then(recipeService).shouldHaveNoMoreInteractions();
+        then(model).shouldHaveNoInteractions();
+    }
+
 
     @Test
-    public void testCreateOrUpdateIngredient() throws Exception {
+    public void testCreateOrUpdateIngredient_success() throws Exception {
         //given
         IngredientCommand someCommand = defaultRecipeCommand.getIngredients().iterator().next();
-        MultiValueMap<String, String> commandParams = new LinkedMultiValueMap<>();
-        commandParams.add("id", someCommand.getId().toString());
-        commandParams.add("recipeId", RECIPE_ID.toString());
-        commandParams.add("amount", someCommand.getAmount().toString());
-        commandParams.add("description", someCommand.getDescription());
-        commandParams.add("uom.id", someCommand.getUom().getId().toString());
+//        MultiValueMap<String, String> commandParams = new LinkedMultiValueMap<>();
+//        commandParams.add("id", someCommand.getId());
+//        commandParams.add("recipeId", RECIPE_ID);
+//        commandParams.add("amount", someCommand.getAmount().toString());
+//        commandParams.add("description", someCommand.getDescription());
+//        commandParams.add("uom.id", someCommand.getUom().getId());
         given(ingredientService.saveIngredientCommand(ArgumentMatchers.any(IngredientCommand.class))).willReturn(Mono.just(someCommand));
 
         //when
-        initWebDataBinderNoErrors();
+        initWebDataBinder(false);
         Mono<String> viewMono = ingredientController.createOrUpdateIngredient(someCommand, RECIPE_ID, model);
 
         //then
@@ -187,11 +204,45 @@ class IngredientControllerTest {
         );
     }
 
-    private void initWebDataBinderNoErrors() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    @Test
+    public void testCreateOrUpdateIngredient_bindingErrors() throws Exception {
+        //given
+        IngredientCommand someCommand = defaultRecipeCommand.getIngredients().iterator().next();
+
+        //when
+        initWebDataBinder(true);
+        Mono<String> viewMono = ingredientController.createOrUpdateIngredient(someCommand, RECIPE_ID, model);
+
+        //then
+        StepVerifier.create(viewMono)
+                .expectNext(IngredientController.RECIPE_INGREDIENT_FORM)
+                .verifyComplete();
+        then(ingredientService).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testCreateOrUpdateIngredient_idDoesNotMatch() throws Exception {
+        //given
+        IngredientCommand someCommand = defaultRecipeCommand.getIngredients().iterator().next();
+        someCommand.setRecipeId("idThatDoesNotMatch");
+
+        //when
+        initWebDataBinder(false);
+        Executable saveExecutable = () -> ingredientController.createOrUpdateIngredient(someCommand, RECIPE_ID, model);
+
+        //then
+        assertThrows(RuntimeException.class, saveExecutable);
+//        StepVerifier.create(viewMono)
+//                .verifyErrorMatches(ex -> (ex instanceof RuntimeException) && (ex.getMessage().equals("ID of recipe does not match")));
+
+        then(ingredientService).shouldHaveNoInteractions();
+    }
+
+    private void initWebDataBinder(boolean hasErrors) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         WebDataBinder webDataBinder = mock(WebDataBinder.class);
         BindingResult bindingResult = mock(BindingResult.class);
         when(webDataBinder.getBindingResult()).thenReturn(bindingResult);
-        when(bindingResult.hasErrors()).thenReturn(false);
+        when(bindingResult.hasErrors()).thenReturn(hasErrors);
         Method initBinder = IngredientController.class.getDeclaredMethod("initBinder", WebDataBinder.class);
         initBinder.setAccessible(true);
         initBinder.invoke(ingredientController, webDataBinder);

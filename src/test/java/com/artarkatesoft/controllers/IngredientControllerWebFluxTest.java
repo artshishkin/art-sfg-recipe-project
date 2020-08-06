@@ -131,7 +131,21 @@ class IngredientControllerWebFluxTest {
     }
 
     @Test
-    public void testCreateOrUpdateIngredient() throws Exception {
+    void testNewIngredientForm_notFound() {
+        //given
+        given(recipeService.getCommandById(anyString()))
+                .willReturn(Mono.empty());
+        //when
+        webTestClient.get().uri("/recipe/{recipeId}/ingredients/new", RECIPE_ID)
+                .exchange()
+                .expectStatus().isNotFound();
+
+        //then
+        then(recipeService).should().getCommandById(eq(RECIPE_ID));
+    }
+
+    @Test
+    public void testCreateOrUpdateIngredient_success() throws Exception {
         //given
         IngredientCommand someCommand = defaultRecipeCommand.getIngredients().iterator().next();
         MultiValueMap<String, String> commandParams = new LinkedMultiValueMap<>();
@@ -159,6 +173,48 @@ class IngredientControllerWebFluxTest {
                 () -> assertThat(captorValue.getDescription()).isEqualTo(someCommand.getDescription()),
                 () -> assertThat(captorValue.getAmount()).isEqualTo(someCommand.getAmount())
         );
+    }
+
+    @Test
+    public void testCreateOrUpdateIngredient_bindingErrors() throws Exception {
+        //given
+        IngredientCommand someCommand = defaultRecipeCommand.getIngredients().iterator().next();
+        MultiValueMap<String, String> commandParams = new LinkedMultiValueMap<>();
+        commandParams.add("id", someCommand.getId());
+        commandParams.add("recipeId", RECIPE_ID);
+        commandParams.add("amount", someCommand.getAmount().toString());
+        commandParams.add("description", "");
+        commandParams.add("uom.id", someCommand.getUom().getId());
+
+        //when
+        webTestClient.post().uri("/recipe/{recipeId}/ingredients", RECIPE_ID)
+                .contentType(APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData(commandParams))
+                .exchange()
+                .expectStatus().isOk();
+        //then
+        then(ingredientService).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testCreateOrUpdateIngredient_idDoesNotMatch() throws Exception {
+        //given
+        IngredientCommand someCommand = defaultRecipeCommand.getIngredients().iterator().next();
+        MultiValueMap<String, String> commandParams = new LinkedMultiValueMap<>();
+        commandParams.add("id", someCommand.getId());
+        commandParams.add("recipeId", "Wrong Recipe ID");
+        commandParams.add("amount", someCommand.getAmount().toString());
+        commandParams.add("description", someCommand.getDescription());
+        commandParams.add("uom.id", someCommand.getUom().getId());
+
+        //when
+        webTestClient.post().uri("/recipe/{recipeId}/ingredients", RECIPE_ID)
+                .contentType(APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData(commandParams))
+                .exchange()
+                .expectStatus().is5xxServerError();
+        //then
+        then(ingredientService).shouldHaveNoInteractions();
     }
 
     @Test
