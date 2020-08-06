@@ -212,7 +212,7 @@ class IngredientControllerWebFluxTest {
                 .contentType(APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData(commandParams))
                 .exchange()
-                .expectStatus().is5xxServerError();
+                .expectStatus().isBadRequest();
         //then
         then(ingredientService).shouldHaveNoInteractions();
     }

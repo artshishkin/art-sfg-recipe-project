@@ -1,5 +1,6 @@
 package com.artarkatesoft.controllers;
 
+import com.artarkatesoft.exceptions.RecipeIdMismatchException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
@@ -24,6 +25,14 @@ public class ControllerExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String handleWebExchangeBindException(Exception exception, Model model) {
         log.error("Handling WebExchangeBindException." + exception.getMessage());
+        model.addAttribute("exception", exception);
+        return "400error";
+    }
+
+    @ExceptionHandler(RecipeIdMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleRecipeIdMismatchException(Exception exception, Model model) {
+        log.error("Handling RecipeIdMismatchException." + exception.getMessage());
         model.addAttribute("exception", exception);
         return "400error";
     }

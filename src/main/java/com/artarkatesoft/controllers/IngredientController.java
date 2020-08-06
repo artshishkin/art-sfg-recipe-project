@@ -4,6 +4,7 @@ import com.artarkatesoft.commands.IngredientCommand;
 import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.commands.UnitOfMeasureCommand;
 import com.artarkatesoft.exceptions.NotFoundException;
+import com.artarkatesoft.exceptions.RecipeIdMismatchException;
 import com.artarkatesoft.services.IngredientService;
 import com.artarkatesoft.services.RecipeService;
 import com.artarkatesoft.services.UnitOfMeasureService;
@@ -99,7 +100,7 @@ public class IngredientController {
             return Mono.just(RECIPE_INGREDIENT_FORM);
         }
         if (!Objects.equals(recipeId, ingredientCommand.getRecipeId()))
-            throw new RuntimeException("ID of recipe does not match");
+            throw new RecipeIdMismatchException("ID of recipe does not match");
         return ingredientService
                 .saveIngredientCommand(ingredientCommand)
                 .log("createOrUpdateIngredient")

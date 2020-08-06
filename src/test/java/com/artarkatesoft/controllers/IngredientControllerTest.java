@@ -4,6 +4,7 @@ import com.artarkatesoft.commands.IngredientCommand;
 import com.artarkatesoft.commands.RecipeCommand;
 import com.artarkatesoft.commands.UnitOfMeasureCommand;
 import com.artarkatesoft.exceptions.NotFoundException;
+import com.artarkatesoft.exceptions.RecipeIdMismatchException;
 import com.artarkatesoft.services.IngredientService;
 import com.artarkatesoft.services.RecipeService;
 import com.artarkatesoft.services.UnitOfMeasureService;
@@ -231,7 +232,7 @@ class IngredientControllerTest {
         Executable saveExecutable = () -> ingredientController.createOrUpdateIngredient(someCommand, RECIPE_ID, model);
 
         //then
-        assertThrows(RuntimeException.class, saveExecutable);
+        assertThrows(RecipeIdMismatchException.class, saveExecutable);
 //        StepVerifier.create(viewMono)
 //                .verifyErrorMatches(ex -> (ex instanceof RuntimeException) && (ex.getMessage().equals("ID of recipe does not match")));
 
