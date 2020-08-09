@@ -5,7 +5,6 @@ import com.artarkatesoft.domain.Recipe;
 import com.artarkatesoft.exceptions.NotFoundException;
 import com.artarkatesoft.services.RecipeService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,25 +13,20 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import reactor.core.publisher.Mono;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.springframework.test.web.servlet.ResultMatcher.matchAll;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.*;
 
-@Disabled
 @ExtendWith(MockitoExtension.class)
 class RecipeControllerTest {
 
@@ -42,7 +36,8 @@ class RecipeControllerTest {
     @Mock
     RecipeService recipeService;
 
-    private MockMvc mockMvc;
+    @Mock
+    Model model;
 
     @Captor
     ArgumentCaptor<RecipeCommand> recipeCommandCaptor;
@@ -54,12 +49,6 @@ class RecipeControllerTest {
 
     @BeforeEach
     void setUp() {
-
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(recipeController)
-                .setControllerAdvice(new ControllerExceptionHandler())
-                .build();
-
         recipeCommand = new RecipeCommand();
         recipeCommand.setId(ID);
         recipeCommand.setDescription(DESCRIPTION);
@@ -67,6 +56,7 @@ class RecipeControllerTest {
     }
 
     @Test
+    @DisplayName("when Recipe found should be OK")
     void testShowRecipeById() throws Exception {
         //given
         Recipe recipe;
@@ -74,135 +64,114 @@ class RecipeControllerTest {
         recipe.setId(ID);
         recipe.setDescription("Desc1");
 
-        given(recipeService.getById(anyString())).willReturn(Mono.just(recipe));
+        Mono<Recipe> recipeMono = Mono.just(recipe);
+        given(recipeService.getById(anyString())).willReturn(recipeMono);
 
         //when
-        mockMvc.perform(get("/recipe/{id}/show", ID))
-                .andExpect(matchAll(
-                        status().isOk(),
-                        view().name("recipe/show"),
-                        model().attribute("recipe", recipe)
-                ));
+        String view = recipeController.showById(ID, model);
+
         //then
         then(recipeService).should(times(1)).getById(eq(ID));
         then(recipeService).should(never()).getAllRecipes();
         then(recipeService).shouldHaveNoMoreInteractions();
+        assertThat(view).isEqualTo("recipe/show");
+        then(model).should().addAttribute(eq("recipe"), eq(recipeMono));
     }
 
     @Test
-    @DisplayName("when Recipe not found should return Status 404")
+    @DisplayName("when Recipe not found should return view 404error")
     void testShowRecipeByIdWhenNotFound() throws Exception {
         //given
         given(recipeService.getById(anyString())).willThrow(NotFoundException.class);
 
         //when
-        mockMvc.perform(get("/recipe/{id}/show", ID))
-                .andExpect(MockMvcResultMatchers.status().isNotFound())
-                .andExpect(view().name("404error"))
-                .andExpect(model().attributeExists("exception"));
+        String view;
+        try {
+            view = recipeController.showById(ID, model);
+        } catch (NotFoundException ex) {
+            view = recipeController.handleNotFound(ex, model);
+        }
+
         //then
         then(recipeService).should(times(1)).getById(eq(ID));
         then(recipeService).should(never()).getAllRecipes();
         then(recipeService).shouldHaveNoMoreInteractions();
+        then(model).should().addAttribute(eq("exception"), any(NotFoundException.class));
+        assertThat(view).isEqualTo("404error");
     }
 
-    @Test
-    @DisplayName("when get Recipe by ID with wrong String value should return Status 400")
-    @Disabled("now conversion from String to Long is not required so no need to throw exception")
-    void testShowRecipeByIdWhenWrongFormat() throws Exception {
-        //when
-        mockMvc.perform(get("/recipe/{id}/show", "BlaBla"))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(view().name("400error"))
-                .andExpect(model().attributeExists("exception"));
-        //then
-        then(recipeService).shouldHaveNoInteractions();
-    }
 
     @Test
     void testGetNewRecipeForm() throws Exception {
-        mockMvc.perform(get("/recipe/new"))
-                .andExpect(matchAll(
-                        status().isOk(),
-                        view().name("recipe/recipeform"),
-                        model().attributeExists("recipe"),
-                        model().attribute("recipe", notNullValue(RecipeCommand.class))
-                ));
+        //given
+        //when
+        String view = recipeController.newRecipe(model);
+        //then
+        then(model).should().addAttribute(eq("recipe"), any(RecipeCommand.class));
+        assertThat(view).isEqualTo(RecipeController.RECIPE_RECIPEFORM_URL);
     }
 
     @Test
-    void testPostNewRecipeForm() throws Exception {
+    void testPostNewRecipe() throws Exception {
         //given
         given(recipeService.saveRecipeCommand(any(RecipeCommand.class))).willReturn(Mono.just(recipeCommand));
 
         //when
-        mockMvc
-                .perform(
-                        post("/recipe")
-                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                .param("description", DESCRIPTION)
-                                .param("cookTime", String.valueOf(COOK_TIME))
-                                .param("directions", "Directions Bla Bla")
-                )
-                .andExpect(
-                        matchAll(
-                                status().is3xxRedirection(),
-                                redirectedUrlTemplate("/recipe/{id}/show", ID)
-                        )
-                );
+        initWebDataBinder(false);
+        String view = recipeController.createOrUpdate(recipeCommand);
+
         //then
         then(recipeService).should(times(1)).saveRecipeCommand(recipeCommandCaptor.capture());
         RecipeCommand commandCaptorValue = recipeCommandCaptor.getValue();
         assertThat(commandCaptorValue.getDescription()).isEqualTo(DESCRIPTION);
         assertThat(commandCaptorValue.getCookTime()).isEqualTo(COOK_TIME);
+        assertThat(view).isEqualTo("redirect:/recipe/" + ID + "/show");
     }
 
     @Test
     void testPostNewRecipeFormValidationFail() throws Exception {
         //when
-        mockMvc
-                .perform(
-                        post("/recipe")
-                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                .param("description", ";)")
-                )
-                .andExpect(
-                        matchAll(
-                                status().isOk(),
-                                view().name(RecipeController.RECIPE_RECIPEFORM_URL)
-                        )
-                );
+        initWebDataBinder(true);
+        String view = recipeController.createOrUpdate(recipeCommand);
+
         //then
         then(recipeService).shouldHaveNoInteractions();
+        assertThat(view).isEqualTo(RecipeController.RECIPE_RECIPEFORM_URL);
+    }
+
+
+    private void initWebDataBinder(boolean hasErrors) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        WebDataBinder webDataBinder = mock(WebDataBinder.class);
+        BindingResult bindingResult = mock(BindingResult.class);
+        when(webDataBinder.getBindingResult()).thenReturn(bindingResult);
+        when(bindingResult.hasErrors()).thenReturn(hasErrors);
+        Method initBinder = recipeController.getClass().getDeclaredMethod("initBinder", WebDataBinder.class);
+        initBinder.setAccessible(true);
+        initBinder.invoke(recipeController, webDataBinder);
     }
 
     @Test
     void testUpdateRecipeForm() throws Exception {
         //given
-        given(recipeService.getCommandById(ID)).willReturn(Mono.just(recipeCommand));
+        Mono<RecipeCommand> recipeCommandMono = Mono.just(recipeCommand);
+        given(recipeService.getCommandById(ID)).willReturn(recipeCommandMono);
 
         //when
-        mockMvc.perform(get("/recipe/{id}/update", ID))
-                .andExpect(matchAll(
-                        status().isOk(),
-                        view().name("recipe/recipeform"),
-                        model().attributeExists("recipe"),
-                        model().attribute("recipe", notNullValue(RecipeCommand.class))
-                ));
+        String view = recipeController.updateRecipe(ID, model);
+
         //then
         then(recipeService).should().getCommandById(eq(ID));
+        then(model).should().addAttribute(eq("recipe"),eq(recipeCommandMono));
+        assertThat(view).isEqualTo(RecipeController.RECIPE_RECIPEFORM_URL);
     }
 
     @Test
     void testDeleteById() throws Exception {
-        //given
         //when
-        mockMvc.perform(get("/recipe/{id}/delete", ID))
-                .andExpect(matchAll(
-                        status().is3xxRedirection(),
-                        redirectedUrl("/")
-                ));
+        String view = recipeController.deleteRecipe(ID);
+
         //then
         then(recipeService).should(times(1)).deleteById(eq(ID));
+        assertThat(view).isEqualTo("redirect:/");
     }
 }
